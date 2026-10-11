@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · Taxi Antispoof</title>
+<meta name="description" content="What the Taxi Antispoof app records, what it sends, where it goes and how to have it deleted.">
+<link rel="alternate" hreflang="uk" href="uk/">
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--line:#d8dee4;--soft:#f6f8fa;--link:#0b57d0;--accent:#1a73e8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--fg:#e6e8eb;--muted:#9aa4ae;--line:#2d333b;--soft:#171a20;--link:#8ab4f8;--accent:#8ab4f8}}
+:root[data-theme="dark"]{--bg:#0f1115;--fg:#e6e8eb;--muted:#9aa4ae;--line:#2d333b;--soft:#171a20;--link:#8ab4f8;--accent:#8ab4f8}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:46rem;margin:0 auto;padding:0 16px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:8px;font-size:15px}
+header.top nav{display:flex;flex-wrap:wrap;gap:6px 16px}
+a{color:var(--link);text-decoration-thickness:1px;text-underline-offset:2px;overflow-wrap:anywhere}
+.lang{font-weight:600}
+h1{font-size:1.75rem;line-height:1.25;margin:24px 0 8px}
+h2{font-size:1.2rem;line-height:1.3;margin:36px 0 10px;padding-top:4px}
+h2 a.anchor{color:inherit;text-decoration:none}
+p,li{overflow-wrap:break-word}
+ul,ol{padding-left:1.4em}
+li{margin:4px 0}
+hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.meta{color:var(--muted)}
+table{border-collapse:collapse;width:100%;margin:12px 0 16px;font-size:15px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+@media (max-width:640px){
+  table,thead,tbody,tr,th,td{display:block;width:100%}
+  thead{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+  tr{border:1px solid var(--line);border-radius:8px;margin:0 0 12px;padding:4px 0;background:var(--bg)}
+  td{border:0;border-bottom:1px solid var(--line);padding:6px 12px}
+  td:last-child{border-bottom:0}
+  td[data-label]::before{content:attr(data-label);display:block;font-size:13px;font-weight:600;color:var(--muted)}
+  td[data-label=""]::before{display:none}
+}
+.cards{list-style:none;padding:0;display:grid;gap:12px;margin:20px 0}
+.cards a{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:10px;text-decoration:none;background:var(--soft)}
+.cards a span{display:block;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><a href="../">Taxi Antispoof</a><nav><a href="../terms/">Terms of Use</a> <a href="uk/" class="lang" lang="uk" hreflang="uk">Українською</a></nav></header>
+<main>
+<h1>Taxi Antispoof Privacy Policy</h1>
+<p class="meta"><strong>Last updated:</strong> <time datetime="2026-10-11">11 October 2026</time>. This version applies from that date.</p>
+<p>This policy explains what the Taxi Antispoof app for Android ("the app") records, what leaves your phone, where it goes, how long it is kept and what you can do about it.</p>
+<p>The app is published by <strong>Odyssean LLC</strong>, a limited liability company registered in the State of Washington, United States ("we", "us"). Address: 4730 University Way NE, Ste 104-5528, Seattle, WA 98105, United States. Email: <strong>team@odyssean.space</strong>.</p>
+<hr>
+<h2 id="summary"><a class="anchor" href="#summary">1. The short version</a></h2>
+<ul>
+<li>The app works out your position on your phone. To do that, it records satellite signals, motion sensors, mobile cells and Wi-Fi networks around you, and your phone's own location. <strong>This is precise location data.</strong></li>
+<li>It records all this only while a recording is on: from your tap on <strong>Start</strong> (or on <strong>I'm here</strong>) until you tap <strong>Stop</strong>. A notification shows the whole time. The recording continues when the screen is off or another app is in front.</li>
+<li>Nothing is sent to us before you tap <strong>Agree and continue</strong> on the screen that explains this.</li>
+<li>The app can send us three kinds of data. Each has its own switch in <strong>Settings → Data</strong>:<ol>
+<li><strong>Crash reports and app journal:</strong> on by default. You can turn it off.</li>
+<li><strong>Positioning results:</strong> off by default.</li>
+<li><strong>Full recordings:</strong> off by default.</li>
+</ol>
+</li>
+<li>Without an offline map, the map, address search and routes come from public servers run by others. They see your IP address and the area you look at, what you search for and where your routes start and end (section 4).</li>
+<li>We use what you send us to fix faults and to make positioning more accurate. We do not sell it, we do not use it for advertising, and the app has no advertising or analytics code.</li>
+<li>There is no account and no sign-in screen. We know your installation only by a random <strong>install ID</strong>. To have your data deleted, email us that ID (section 10).</li>
+</ul>
+<h2 id="recorded"><a class="anchor" href="#recorded">2. What the app records on your phone</a></h2>
+<p>While a recording is on, the app writes the following into files on your phone:</p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="What">Satellite data</td>
+<td data-label="Details">Raw measurements, navigation messages and signal strength from your phone's satellite receiver (GPS, Galileo, GLONASS, BeiDou and other systems), and the receiver's model and capabilities. Orbit files the app downloads are kept with the recording.</td>
+</tr>
+<tr>
+<td data-label="What">Your location</td>
+<td data-label="Details">Location fixes from your phone's satellite receiver and from Android's network location, with their accuracy. The <strong>I'm here</strong> pin, if you set one.</td>
+</tr>
+<tr>
+<td data-label="What">Motion and other sensors</td>
+<td data-label="Details">Accelerometer, gyroscope, compass, orientation, barometer, ambient light and the significant-motion detector. If you allow <strong>Physical activity</strong>: the step detector and step counter. The names and makers of the sensors.</td>
+</tr>
+<tr>
+<td data-label="What">Mobile network</td>
+<td data-label="Details">The cells your phone can see (their identifiers and signal strength), the network operator, whether you are roaming, and the operator and country of your SIM cards. Not your phone number, the SIM card's serial number or the phone's IMEI.</td>
+</tr>
+<tr>
+<td data-label="What">Wi-Fi networks</td>
+<td data-label="Details">The access points around you: their identifiers (BSSID), names (SSID), signal strength, frequency and what they announce about themselves (for example a venue name), including the network your phone is connected to. Network names can be names other people chose for their own networks. The app asks the phone to scan for Wi-Fi regularly. It never joins these networks and never reads anyone's traffic.</td>
+</tr>
+<tr>
+<td data-label="What">Phone state</td>
+<td data-label="Details">Battery level, charging and temperature; screen on or off and its brightness; battery saving and power states; whether the phone is online and over which kind of network; airplane mode; Wi-Fi and location settings; the phone's clock, time zone and network time; the app's own processor use.</td>
+</tr>
+<tr>
+<td data-label="What">Navigation</td>
+<td data-label="Details">When you set a destination: its name and coordinates, the route, and how far you are from it. Not the text you type into the search box.</td>
+</tr>
+<tr>
+<td data-label="What">Car data</td>
+<td data-label="Details">Only if an OBD adapter is paired with your phone in Android's Bluetooth settings and you allowed <strong>Nearby devices</strong>: while recording, the app connects to the adapter and reads your car's speed, engine speed, throttle and accelerator position, engine load, gear, odometer, distance since fault codes were cleared, engine run time, fuel level and fuel rate, coolant and outside temperature, intake pressure, air flow and barometric pressure, and which of these your car supports. Also the adapter's name, Bluetooth address, version and voltage reading. Not the car's identification number (VIN).</td>
+</tr>
+<tr>
+<td data-label="What">The app's results</td>
+<td data-label="Details">The positions the app computed, with their uncertainty, speed and heading; beside them, your phone's own location fix and Android's network location at the same moment; the satellite signals the app used or set aside, and whether it judged any of them to be wrong.</td>
+</tr>
+<tr>
+<td data-label="What">Device and app</td>
+<td data-label="Details">Phone maker and model, Android version, app version, the version of the positioning model, and the country the app works in.</td>
+</tr>
+</tbody>
+</table>
+<p>Whenever the app runs, recording or not, it also keeps an <strong>app journal</strong>: when the app started and stopped and why, recordings starting and stopping, which permissions are on, power settings, uploads, your choices on the switches, map downloads, the country the app detected from the mobile network, and the text of any problem report you send with <strong>Report a problem</strong>. The journal contains no positions.</p>
+<p>Together, the recorded data shows where you were and when. Treat a recording like a detailed log of your trips.</p>
+<p>The app computes your position from this data on the phone itself. It does not need to send anything to us to work.</p>
+<h2 id="sent"><a class="anchor" href="#sent">3. What can leave your phone</a></h2>
+<p>Nothing is sent to us until you tap <strong>Agree and continue</strong> on the screen "Your location and trip recording". After that, the switches in <strong>Settings → Data</strong> decide what is sent:</p>
+<table>
+<thead>
+<tr>
+<th>Switch</th>
+<th>What it sends</th>
+<th>Size</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Switch"><strong>Crash reports and app journal</strong></td>
+<td data-label="What it sends">Crash and freeze reports, and the app journal (section 2). They include the install ID and technical details of the phone (model, Android version, memory, storage, battery, screen, language and time zone). No positions: the journal holds only the country the app detected, and Sentry, which receives the crash reports, works out an approximate city, region and country from the connection's IP address.</td>
+<td data-label="Size">Small</td>
+<td data-label="Default"><strong>On.</strong> You can turn it off.</td>
+</tr>
+<tr>
+<td data-label="Switch"><strong>Positioning results</strong></td>
+<td data-label="What it sends">The app's results (section 2), with the install ID. This is location data.</td>
+<td data-label="Size">Small</td>
+<td data-label="Default"><strong>Off.</strong> You can turn it on.</td>
+</tr>
+<tr>
+<td data-label="Switch"><strong>Full recordings</strong></td>
+<td data-label="What it sends">Everything else the app records (section 2), with the install ID.</td>
+<td data-label="Size">10–40 MB per hour</td>
+<td data-label="Default"><strong>Off.</strong> You can turn it on.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Crash reports go to Sentry. The journal, results and recordings go to our private storage at Supabase. See section 7.</li>
+<li>Files are sent in parts, during and after a recording. By default they are sent only over Wi-Fi. You can allow mobile data with <strong>Upload over mobile data</strong> in Settings. Crash reports are small and go over any connection.</li>
+<li>The first time the app sends a file, it signs in to our storage anonymously, without any screen or account. Our storage provider records the IP address the phone signed in from and the app's technical identification (Android version and phone model) with that sign-in.</li>
+<li>After our server confirms that it has received a whole file, the app deletes that file from your phone 48 hours later.</li>
+<li>When you turn a switch <strong>off</strong>, the app stops sending that kind of data from then on. Data already sent stays with us until you ask us to delete it (section 10).</li>
+<li>When you turn a switch <strong>on</strong>, the app also sends the files of that kind that are still on your phone from earlier recordings.</li>
+<li>A problem report you send with <strong>Report a problem</strong> is part of the journal: it reaches us only while <strong>Crash reports and app journal</strong> is on. Its text is never put into crash reports.</li>
+<li><strong>Export logs</strong> in Settings packs the app's recordings and journals into one file and opens Android's share menu. Where it goes is your choice. We receive it only if you send it to us.</li>
+</ul>
+<h2 id="services"><a class="anchor" href="#services">4. Other services the app contacts</a></h2>
+<p>To work, the app talks directly to the services below. Each of them sees your phone's IP address and the request itself. They are not our service providers, and their own privacy policies apply.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>When</th>
+<th>What it receives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Service">OpenFreeMap (tiles.openfreemap.org)</td>
+<td data-label="When">Map images, when no offline map for your country is on the phone</td>
+<td data-label="What it receives">The parts of the map you look at. These usually show the area around you.</td>
+</tr>
+<tr>
+<td data-label="Service">Photon by komoot (photon.komoot.io)</td>
+<td data-label="When">Address search, when no offline map is on the phone</td>
+<td data-label="What it receives">The text you type and a nearby point (your position, or the centre of the map), so that results near you come first.</td>
+</tr>
+<tr>
+<td data-label="Service">The public Valhalla routing server run by FOSSGIS e.V. (valhalla1.openstreetmap.de)</td>
+<td data-label="When">Routes, when no offline map is on the phone</td>
+<td data-label="What it receives">The start (your position) and the end of each route.</td>
+</tr>
+<tr>
+<td data-label="Service">German Federal Agency for Cartography and Geodesy, BKG (igs.bkg.bund.de)</td>
+<td data-label="When">Downloading satellite orbit files while the positioning engine runs</td>
+<td data-label="What it receives">Only the download request.</td>
+</tr>
+<tr>
+<td data-label="Service">Time servers: ntp.colocall.net, the NTP Pool Project (pool.ntp.org, ua.pool.ntp.org), Google (time.google.com) and Cloudflare (time.cloudflare.com)</td>
+<td data-label="When">Checking the phone's clock while the positioning engine runs</td>
+<td data-label="What it receives">Only the time request.</td>
+</tr>
+<tr>
+<td data-label="Service">GitHub (github.com)</td>
+<td data-label="When"><strong>Download maps</strong></td>
+<td data-label="What it receives">Which offline map you download.</td>
+</tr>
+<tr>
+<td data-label="Service">The website behind a link you share into the app</td>
+<td data-label="When">When you share a place from another app (for example a Google Maps link)</td>
+<td data-label="What it receives">The app opens the link to read the place's coordinates.</td>
+</tr>
+</tbody>
+</table>
+<p>With an offline map for your country on the phone, the map, search and routes work on the phone and nothing is sent to the first three services.</p>
+<p>Three more things are outside our control:</p>
+<ul>
+<li>Android's network location comes from your phone's own location service (on most phones, Google Location Accuracy). It works under Google's terms and your phone's settings.</li>
+<li>If you allowed your phone to share usage and diagnostics with Google, Google Play may give us crash statistics about the app. Google provides these under its own terms, and they do not identify you to us.</li>
+<li>If backup is on in your phone's settings, Android may copy the app's files into your phone's backup in your Google account, under Google's terms. We cannot read those backups.</li>
+</ul>
+<h2 id="purposes"><a class="anchor" href="#purposes">5. Why we use your data, and on what legal basis</a></h2>
+<table>
+<thead>
+<tr>
+<th>What we do</th>
+<th>Data</th>
+<th>Legal basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="What we do">Find and fix crashes, unexpected stops, battery drain and overheating</td>
+<td data-label="Data">Crash reports, app journal</td>
+<td data-label="Legal basis">Our legitimate interest in an app that works. You can turn it off at any time.</td>
+</tr>
+<tr>
+<td data-label="What we do">Make positioning more accurate: test every new version of the positioning engine on earlier drives, and build and improve our positioning data, such as a list of Wi-Fi networks and mobile cells and where they are, which the app may use on phones to find positions</td>
+<td data-label="Data">Positioning results, full recordings</td>
+<td data-label="Legal basis">Your consent: you turn the switch on, and you can turn it off at any time.</td>
+</tr>
+<tr>
+<td data-label="What we do">Keep our servers safe and stop abuse</td>
+<td data-label="Data">IP addresses, sign-in records, upload records</td>
+<td data-label="Legal basis">Our legitimate interest in a secure service.</td>
+</tr>
+<tr>
+<td data-label="What we do">Answer your requests and delete data, and keep a record that we did</td>
+<td data-label="Data">Install ID, your email address and message</td>
+<td data-label="Legal basis">Our legal obligations, and our legitimate interest in showing that we handled your request.</td>
+</tr>
+</tbody>
+</table>
+<p>We do not use your data for any other purpose. If we ever want to, we will ask you first.</p>
+<h2 id="never"><a class="anchor" href="#never">6. What we do not do</a></h2>
+<ul>
+<li>We do not sell your data.</li>
+<li>We do not use it for advertising, and we do not build profiles of you.</li>
+<li>The app contains no advertising code and no analytics code.</li>
+<li>We do not publish your recordings, your results or your trips.</li>
+<li>We do not share your data with anyone else (for example authorities, researchers or business partners), except the providers in section 7 and where the law requires it (section 12).</li>
+<li>We do not ask for your name, email address or phone number. There is no account.</li>
+</ul>
+<h2 id="storage"><a class="anchor" href="#storage">7. Who stores your data for us, and where</a></h2>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>What</th>
+<th>Where</th>
+<th>Its privacy policy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Provider">Supabase</td>
+<td data-label="What">App journal, positioning results, full recordings and the anonymous sign-in records, in private storage</td>
+<td data-label="Where">European Union (Ireland)</td>
+<td data-label="Its privacy policy"><a href="https://supabase.com/privacy">supabase.com/privacy</a></td>
+</tr>
+<tr>
+<td data-label="Provider">Sentry</td>
+<td data-label="What">Crash reports</td>
+<td data-label="Where">European Union (Germany)</td>
+<td data-label="Its privacy policy"><a href="https://sentry.io/privacy/">sentry.io/privacy</a></td>
+</tr>
+</tbody>
+</table>
+<p>Both act as our processors: they store the data for us and follow our instructions. Only members of our own team who need it for the purposes in section 5 can read it.</p>
+<h2 id="transfers"><a class="anchor" href="#transfers">8. International transfers</a></h2>
+<p>Your data is stored in the European Union. Odyssean LLC is a US company, Supabase and Sentry are US companies too, and our team may work from other countries, so the data can be accessed from the United States and from other countries outside your own. Supabase and Sentry are bound by data processing terms that include the European Commission's Standard Contractual Clauses where the law requires them.</p>
+<h2 id="retention"><a class="anchor" href="#retention">9. How long we keep it</a></h2>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>How long</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Data">Full recordings, positioning results and app journals on our servers</td>
+<td data-label="How long">No fixed end date. We keep them so that we can test every new version of the positioning engine on earlier drives, in every season and on many phones. We delete them when you ask (section 10), or when we no longer need them for that.</td>
+</tr>
+<tr>
+<td data-label="Data">Anonymous sign-in record with the IP address (Supabase)</td>
+<td data-label="How long">As long as we keep the data of that installation.</td>
+</tr>
+<tr>
+<td data-label="Data">Crash reports (Sentry)</td>
+<td data-label="How long">Up to 90 days, then Sentry deletes them automatically.</td>
+</tr>
+<tr>
+<td data-label="Data">Technical access logs with IP addresses, kept by our providers</td>
+<td data-label="How long">A short time, at most 90 days.</td>
+</tr>
+<tr>
+<td data-label="Data">Emails you send us</td>
+<td data-label="How long">As long as we need them to answer you and to show that we handled your request.</td>
+</tr>
+<tr>
+<td data-label="Data">On your phone: files that were sent</td>
+<td data-label="How long">Deleted 48 hours after our server confirms it has received the whole file.</td>
+</tr>
+<tr>
+<td data-label="Data">On your phone: files you chose not to send</td>
+<td data-label="How long">They stay on your phone. When the app's recordings take more than 2 GB, the app deletes the oldest of them first.</td>
+</tr>
+<tr>
+<td data-label="Data">On your phone: offline maps, the map's cache and the app's small working files (for example the last position shown)</td>
+<td data-label="How long">Until you uninstall the app or clear its storage.</td>
+</tr>
+</tbody>
+</table>
+<p>Uninstalling the app, or clearing its storage in Android's settings, deletes everything the app stored on your phone.</p>
+<h2 id="rights"><a class="anchor" href="#rights">10. Your choices and rights</a></h2>
+<ul>
+<li><strong>Stop recording</strong> at any time: tap <strong>Stop</strong>.</li>
+<li><strong>Choose what is sent:</strong> use the switches in <strong>Settings → Data</strong>. You can change them at any time.</li>
+<li><strong>Delete your data on our servers:</strong> email your install ID to <strong>team@odyssean.space</strong>. You find it in the app: menu ⋮ → <strong>Settings</strong> → <strong>Install ID</strong> (tap it to copy). We delete the data stored under that ID, including crash reports, within 30 days and confirm by email.</li>
+<li><strong>Delete the data on your phone:</strong> uninstall the app, or clear its storage in Android's settings.</li>
+<li><strong>Get a copy of your data:</strong> email us your install ID. Anyone who has seen your screen could know that ID, so before we send a copy we ask you to show that the phone is yours: either send a problem report from the app with a code we give you (this needs <strong>Crash reports and app journal</strong> on), or tell us the date, time and place of one of your recorded trips.</li>
+<li><strong>Correct your data:</strong> the data is recorded by the phone's sensors, so it cannot really be corrected, but we can delete it.</li>
+<li><strong>Withdraw consent:</strong> turn the switch off. This does not affect what was sent before; to remove that, ask us to delete it.</li>
+<li><strong>Object</strong> to our use of crash reports and the journal: turn the switch off, or write to us.</li>
+<li><strong>Complain to a data protection authority.</strong> In Ukraine, this is the Ukrainian Parliament Commissioner for Human Rights (<a href="https://ombudsman.gov.ua">ombudsman.gov.ua</a>). In the European Union, it is the data protection authority of your country; in the United Kingdom, the Information Commissioner's Office. Elsewhere, your local authority.</li>
+</ul>
+<p>These rights apply wherever you live. We answer within 30 days and never charge for it.</p>
+<p><strong>Important:</strong> reinstalling the app gives it a new install ID. After that, we cannot connect your earlier data to you unless you kept the old ID. If you want your data deleted, copy the ID <strong>before</strong> you uninstall. If you have used several install IDs, send us all of them.</p>
+<h2 id="security"><a class="anchor" href="#security">11. Security</a></h2>
+<ul>
+<li>Everything the app sends to us, and its requests to the services in section 4, travel over encrypted connections (HTTPS). Only the time requests use the standard time protocol, which is not encrypted; apart from the IP address that every request shows, they carry no data about you.</li>
+<li>Our storage is private. The app can add files to it, only to its own installation's folder, but it cannot read, list, change or delete anything there. Reading needs a key that only our team holds.</li>
+<li>Our providers encrypt the data they store.</li>
+<li>The app tells Sentry not to collect personal data, and it never sends screenshots, screen layouts, your taps or recordings of the screen.</li>
+<li><strong>Recordings on your phone are only as safe as your phone.</strong> Anyone who can unlock it can open the app and export them. Lock your phone.</li>
+</ul>
+<p>No system is perfectly secure. If a breach affects your data, we will inform the authorities as the law requires and publish a notice on this website. We have no email address or phone number for you, so we will also write to anyone who has contacted us about their data.</p>
+<h2 id="sensitive"><a class="anchor" href="#sensitive">12. Sensitive data</a></h2>
+<p>A recording is a detailed log of where you went and when. It can also show where and when satellite positioning failed. We treat recordings and results as sensitive:</p>
+<ul>
+<li>we keep them in private storage and use them only for the purposes in section 5;</li>
+<li>we do not publish them and do not sell them;</li>
+<li>we disclose them to authorities only when the law requires it, for example under a valid court order, and then no more than the order requires.</li>
+</ul>
+<h2 id="children"><a class="anchor" href="#children">13. Children</a></h2>
+<p>The app is made for drivers. It is not meant for anyone under 18, and we do not knowingly collect data from children. If you believe a child has sent us data, write to us and we will delete it.</p>
+<h2 id="changes"><a class="anchor" href="#changes">14. Changes to this policy</a></h2>
+<p>We may update this policy when the app or the law changes. We will change the date at the top. If we want the app to send more kinds of data, or to use data for a new purpose, the app will ask you again before it applies.</p>
+<h2 id="contact"><a class="anchor" href="#contact">15. Contact</a></h2>
+<ul>
+<li><strong>Email:</strong> team@odyssean.space</li>
+<li><strong>Mail:</strong> Odyssean LLC, 4730 University Way NE, Ste 104-5528, Seattle, WA 98105, United States</li>
+</ul>
+<p>We answer within 30 days.</p>
+<p>This policy exists in English and Ukrainian. If the two versions differ, the Ukrainian version applies to users in Ukraine and the English version to everyone else.</p>
+</main>
+<footer>© 2026 Odyssean LLC · <a href="mailto:team@odyssean.space">team@odyssean.space</a></footer>
+</div>
+</body>
+</html>
