@@ -22,6 +22,7 @@ there, not here.
 
 ## Satellite orbits
 
-The release `orbits` holds the last three days' daily broadcast orbit files (RINEX navigation) from IGS (BKG, else IGN),
-copied every hour by `.github/workflows/orbits.yml`. The app downloads them from here first, because igs.bkg.bund.de does
+The release `orbits` holds the last three days' daily broadcast orbit files (RINEX navigation), refreshed every hour by
+`.github/workflows/orbits.yml` with `.github/orbits.py`: IGS/BKG when it answers, else Wuhan University's IGS archive (for today,
+a merge of its stations' hourly files). The app downloads them from here first, because igs.bkg.bund.de does
 not answer from some networks. That release is never marked Latest, so the maps' catalogue link stays on the map packs.
