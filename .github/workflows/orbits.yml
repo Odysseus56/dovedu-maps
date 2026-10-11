@@ -33,3 +33,9 @@ jobs:
           gh release view orbits --json assets -q '.assets[].name' | grep -Ev "^(${keep})$" | while read -r a; do
             gh release delete-asset orbits "$a" -y && echo "deleted $a"
           done
+      - name: Keep the schedule alive (GitHub pauses a public repository's schedules after 60 days without a commit)
+        run: |
+          if [ $(( $(date +%s) - $(git log -1 --format=%ct) )) -gt $(( 45 * 86400 )) ]; then
+            git config user.name "orbits workflow"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "keepalive: GitHub pauses scheduled workflows after 60 days without a commit" && git push
+          fi
