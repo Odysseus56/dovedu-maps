@@ -1,0 +1,41 @@
+# Our own copy of the satellites' broadcast orbit files for the Taxi Antispoof app: every hour, the last three days' daily
+# files from IGS (BKG, else IGN) go into the release "orbits", replacing the older copy. The app downloads from here first:
+# igs.bkg.bund.de does not answer from some networks. The release is never "Latest", so the maps' catalogue link
+# (releases/latest/download/catalog.json) keeps pointing at the map packs.
+name: orbits
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Copy the last three days' broadcast orbit files into the release "orbits"
+        run: |
+          set -u
+          gh release view orbits >/dev/null 2>&1 || gh release create orbits --latest=false --title "Satellite orbits (hourly copy)" \
+            --notes "The last three days' daily broadcast orbit files (RINEX navigation, mixed constellations) from IGS (BKG, else IGN), refreshed every hour by .github/workflows/orbits.yml. Read by the Taxi Antispoof app."
+          fetch() {   # fetch <yyyyddd>: the first of the day's file names that some server has, uploaded under its own name
+            local day=$1 y=${1:0:4} d=${1:4:3} n base
+            for n in "BRDC00IGS_R_${day}0000_01D_MN.rnx.gz" "BRDC00WRD_R_${day}0000_01D_MN.rnx.gz" "BRDC00WRD_S_${day}0000_01D_MN.rnx.gz"; do
+              for base in "https://igs.bkg.bund.de/root_ftp/IGS/BRDC/$y/$d" "https://igs.ign.fr/pub/igs/data/$y/$d"; do
+                if curl -fsSL --retry 2 --max-time 120 -o "$n" "$base/$n" && [ "$(stat -c %s "$n")" -gt 10000 ] && gzip -t "$n"; then
+                  gh release upload orbits "$n" --clobber && echo "copied $n from $base" && return 0
+                fi
+                rm -f "$n"
+              done
+            done
+            echo "no file for $day"
+          }
+          keep=""
+          for back in 0 1 2; do day=$(date -u -d "-$back day" +%Y%j); keep="$keep|$day"; fetch "$day"; done
+          gh release view orbits --json assets -q '.assets[].name' | grep -Ev "(${keep#|})" | while read -r a; do
+            gh release delete-asset orbits "$a" -y && echo "deleted $a"
+          done
