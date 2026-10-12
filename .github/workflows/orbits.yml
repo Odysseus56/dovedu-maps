@@ -1,11 +1,13 @@
-# Our own copy of the satellites' broadcast orbit files for the Taxi Antispoof app: every hour, the last three days' files go
+# Our own copy of the satellites' broadcast orbit files for the Taxi Antispoof app: the last three days' files go
 # into the release "orbits", replacing the older copy (.github/orbits.py: IGS/BKG when it answers, else Wuhan University's IGS
 # archive, and for today a merge of its stations' hourly files). The app downloads from here first. The release is never
 # "Latest", so the maps' catalogue link (releases/latest/download/catalog.json) keeps pointing at the map packs.
+# The timer asks every 5 minutes (founder, 2026-10-12) because GitHub drops most timed runs (4 of 26 hourly ones ran on
+# 2026-10-11/12, 4-42 min late); a run skips the work while today's file is under 15 minutes old.
 name: orbits
 on:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -18,12 +20,25 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - name: Skip while today's file is under 15 minutes old
+        id: fresh
+        run: |
+          day=$(date -u +%Y%j)
+          at=$(gh release view orbits --json assets -q "[.assets[] | select(.name | contains(\"_${day}0000_\")) | .updatedAt] | max // empty" 2>/dev/null || true)
+          if [ -n "$at" ]; then
+            age=$(( $(date +%s) - $(date -d "$at" +%s) ))
+            echo "today's file is $(( age / 60 )) min old"
+            if [ "$age" -lt 900 ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+          fi
       - uses: actions/checkout@v4
+        if: steps.fresh.outputs.skip != '1'
         with:
           sparse-checkout: .github
       - name: Fetch the last three days' orbit files
+        if: steps.fresh.outputs.skip != '1'
         run: python3 .github/orbits.py
       - name: Replace them in the release "orbits"
+        if: steps.fresh.outputs.skip != '1'
         run: |
           set -u
           gh release view orbits >/dev/null 2>&1 || gh release create orbits --latest=false --title "Satellite orbits (hourly copy)" \
@@ -34,6 +49,7 @@ jobs:
             gh release delete-asset orbits "$a" -y && echo "deleted $a"
           done
       - name: Keep the schedule alive (GitHub pauses a public repository's schedules after 60 days without a commit)
+        if: steps.fresh.outputs.skip != '1'
         run: |
           if [ $(( $(date +%s) - $(git log -1 --format=%ct) )) -gt $(( 45 * 86400 )) ]; then
             git config user.name "orbits workflow"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
