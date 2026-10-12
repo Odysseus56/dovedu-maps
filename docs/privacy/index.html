@@ -49,18 +49,18 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 <header class="top"><a href="../">Taxi Antispoof</a><nav><a href="../terms/">Terms of Use</a> <a href="uk/" class="lang" lang="uk" hreflang="uk">Українською</a></nav></header>
 <main>
 <h1>Taxi Antispoof Privacy Policy</h1>
-<p class="meta"><strong>Last updated:</strong> <time datetime="2026-10-11">11 October 2026</time>. This version applies from that date.</p>
+<p class="meta"><strong>Last updated:</strong> 12 October 2026. This version applies from that date.</p>
 <p>This policy explains what the Taxi Antispoof app for Android ("the app") records, what leaves your phone, where it goes, how long it is kept and what you can do about it.</p>
 <p>The app is published by <strong>Odyssean LLC</strong>, a limited liability company registered in the State of Washington, United States ("we", "us"). Address: 4730 University Way NE, Ste 104-5528, Seattle, WA 98105, United States. Email: <strong>team@odyssean.space</strong>.</p>
 <hr>
 <h2 id="summary"><a class="anchor" href="#summary">1. The short version</a></h2>
 <ul>
 <li>The app works out your position on your phone. To do that, it records satellite signals, motion sensors, mobile cells and Wi-Fi networks around you, and your phone's own location. <strong>This is precise location data.</strong></li>
-<li>It records all this only while a recording is on: from your tap on <strong>Start</strong> (or on <strong>I'm here</strong>) until you tap <strong>Stop</strong>. A notification shows the whole time. The recording continues when the screen is off or another app is in front.</li>
+<li>It records all this only while positioning is on: from when you open the app until you tap <strong>Stop</strong> (in its notification, or menu ☰ → <strong>Settings</strong> → <strong>Stop positioning now</strong>), or until it shuts down by itself after the car has not driven for 15 minutes while the app is not on the screen (you can change the 15 minutes in <strong>Settings</strong>). A notification shows the whole time. Positioning continues when the screen is off or another app is in front.</li>
 <li>Nothing is sent to us before you tap <strong>Agree and continue</strong> on the screen that explains this.</li>
-<li>The app can send us three kinds of data. Each has its own switch in <strong>Settings → Data</strong>:<ol>
-<li><strong>Crash reports and app journal:</strong> on by default. You can turn it off.</li>
-<li><strong>Positioning results:</strong> off by default.</li>
+<li>The app can send us three kinds of data. Each has its own switch in <strong>Settings → What we receive</strong>:<ol>
+<li><strong>Bug reports</strong> (crash reports and the app journal): on by default. You can turn it off.</li>
+<li><strong>Positions</strong> (the app's positioning results): off by default.</li>
 <li><strong>Full recordings:</strong> off by default.</li>
 </ol>
 </li>
@@ -69,7 +69,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 <li>There is no account and no sign-in screen. We know your installation only by a random <strong>install ID</strong>. To have your data deleted, email us that ID (section 10).</li>
 </ul>
 <h2 id="recorded"><a class="anchor" href="#recorded">2. What the app records on your phone</a></h2>
-<p>While a recording is on, the app writes the following into files on your phone:</p>
+<p>While positioning is on, the app writes the following into files on your phone:</p>
 <table>
 <thead>
 <tr>
@@ -84,7 +84,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </tr>
 <tr>
 <td data-label="What">Your location</td>
-<td data-label="Details">Location fixes from your phone's satellite receiver and from Android's network location, with their accuracy. The <strong>I'm here</strong> pin, if you set one.</td>
+<td data-label="Details">Location fixes from your phone's satellite receiver and from Android's network location, with their accuracy. The position you set yourself with <strong>Set your position</strong> → <strong>Here I am</strong>, if you do.</td>
 </tr>
 <tr>
 <td data-label="What">Motion and other sensors</td>
@@ -108,7 +108,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </tr>
 <tr>
 <td data-label="What">Car data</td>
-<td data-label="Details">Only if an OBD adapter is paired with your phone in Android's Bluetooth settings and you allowed <strong>Nearby devices</strong>: while recording, the app connects to the adapter and reads your car's speed, engine speed, throttle and accelerator position, engine load, gear, odometer, distance since fault codes were cleared, engine run time, fuel level and fuel rate, coolant and outside temperature, intake pressure, air flow and barometric pressure, and which of these your car supports. Also the adapter's name, Bluetooth address, version and voltage reading. Not the car's identification number (VIN).</td>
+<td data-label="Details">Only if an OBD adapter is paired with your phone in Android's Bluetooth settings and you allowed <strong>Nearby devices</strong>: while positioning is on, the app connects to the adapter and reads your car's speed, engine speed, throttle and accelerator position, engine load, gear, odometer, distance since fault codes were cleared, engine run time, fuel level and fuel rate, coolant and outside temperature, intake pressure, air flow and barometric pressure, and which of these your car supports. Also the adapter's name, Bluetooth address, version and voltage reading. Not the car's identification number (VIN).</td>
 </tr>
 <tr>
 <td data-label="What">The app's results</td>
@@ -120,11 +120,11 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </tr>
 </tbody>
 </table>
-<p>Whenever the app runs, recording or not, it also keeps an <strong>app journal</strong>: when the app started and stopped and why, recordings starting and stopping, which permissions are on, power settings, uploads, your choices on the switches, map downloads, the country the app detected from the mobile network, and the text of any problem report you send with <strong>Report a problem</strong>. The journal contains no positions.</p>
+<p>Whenever the app runs, positioning or not, it also keeps an <strong>app journal</strong>: when the app started and stopped and why, positioning starting and stopping (including when it shut down by itself), which permissions are on, power settings, uploads, your choices on the switches, map downloads, the country the app detected from the mobile network, and the text of any problem report you send with <strong>Report a problem</strong>. The journal contains no positions.</p>
 <p>Together, the recorded data shows where you were and when. Treat a recording like a detailed log of your trips.</p>
 <p>The app computes your position from this data on the phone itself. It does not need to send anything to us to work.</p>
 <h2 id="sent"><a class="anchor" href="#sent">3. What can leave your phone</a></h2>
-<p>Nothing is sent to us until you tap <strong>Agree and continue</strong> on the screen "Your location and trip recording". After that, the switches in <strong>Settings → Data</strong> decide what is sent:</p>
+<p>Nothing is sent to us until you tap <strong>Agree and continue</strong> on the screen "Your location and trip recording". After that, the switches in <strong>Settings → What we receive</strong> decide what is sent:</p>
 <table>
 <thead>
 <tr>
@@ -136,13 +136,13 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </thead>
 <tbody>
 <tr>
-<td data-label="Switch"><strong>Crash reports and app journal</strong></td>
+<td data-label="Switch"><strong>Bug reports</strong> (crash reports and app journal)</td>
 <td data-label="What it sends">Crash and freeze reports, and the app journal (section 2). They include the install ID and technical details of the phone (model, Android version, memory, storage, battery, screen, language and time zone). No positions: the journal holds only the country the app detected, and Sentry, which receives the crash reports, works out an approximate city, region and country from the connection's IP address.</td>
 <td data-label="Size">Small</td>
 <td data-label="Default"><strong>On.</strong> You can turn it off.</td>
 </tr>
 <tr>
-<td data-label="Switch"><strong>Positioning results</strong></td>
+<td data-label="Switch"><strong>Positions</strong> (positioning results)</td>
 <td data-label="What it sends">The app's results (section 2), with the install ID. This is location data.</td>
 <td data-label="Size">Small</td>
 <td data-label="Default"><strong>Off.</strong> You can turn it on.</td>
@@ -157,12 +157,12 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </table>
 <ul>
 <li>Crash reports go to Sentry. The journal, results and recordings go to our private storage at Supabase. See section 7.</li>
-<li>Files are sent in parts, during and after a recording. By default they are sent only over Wi-Fi. You can allow mobile data with <strong>Upload over mobile data</strong> in Settings. Crash reports are small and go over any connection.</li>
+<li>Files are sent in parts, while positioning is on and afterwards. By default they are sent only over Wi-Fi. You can allow mobile data with <strong>Upload on mobile data</strong> in Settings. Crash reports are small and go over any connection.</li>
 <li>The first time the app sends a file, it signs in to our storage anonymously, without any screen or account. Our storage provider records the IP address the phone signed in from and the app's technical identification (Android version and phone model) with that sign-in.</li>
 <li>After our server confirms that it has received a whole file, the app deletes that file from your phone 48 hours later.</li>
 <li>When you turn a switch <strong>off</strong>, the app stops sending that kind of data from then on. Data already sent stays with us until you ask us to delete it (section 10).</li>
 <li>When you turn a switch <strong>on</strong>, the app also sends the files of that kind that are still on your phone from earlier recordings.</li>
-<li>A problem report you send with <strong>Report a problem</strong> is part of the journal: it reaches us only while <strong>Crash reports and app journal</strong> is on. Its text is never put into crash reports.</li>
+<li>A problem report you send with <strong>Report a problem</strong> is part of the journal: it reaches us only while <strong>Bug reports</strong> is on. Its text is never put into crash reports.</li>
 <li><strong>Export logs</strong> in Settings packs the app's recordings and journals into one file and opens Android's share menu. Where it goes is your choice. We receive it only if you send it to us.</li>
 </ul>
 <h2 id="services"><a class="anchor" href="#services">4. Other services the app contacts</a></h2>
@@ -193,7 +193,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </tr>
 <tr>
 <td data-label="Service">German Federal Agency for Cartography and Geodesy, BKG (igs.bkg.bund.de)</td>
-<td data-label="When">Downloading satellite orbit files while the positioning engine runs</td>
+<td data-label="When">Downloading satellite orbit files, when our own copy on GitHub cannot be reached</td>
 <td data-label="What it receives">Only the download request.</td>
 </tr>
 <tr>
@@ -203,8 +203,8 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 </tr>
 <tr>
 <td data-label="Service">GitHub (github.com)</td>
-<td data-label="When"><strong>Download maps</strong></td>
-<td data-label="What it receives">Which offline map you download.</td>
+<td data-label="When"><strong>Offline maps</strong>; satellite orbit files, every hour while the phone is on Wi-Fi and while the positioning engine runs</td>
+<td data-label="What it receives">Which offline map you download; the orbit file request.</td>
 </tr>
 <tr>
 <td data-label="Service">The website behind a link you share into the app</td>
@@ -216,7 +216,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 <p>With an offline map for your country on the phone, the map, search and routes work on the phone and nothing is sent to the first three services.</p>
 <p>Three more things are outside our control:</p>
 <ul>
-<li>Android's network location comes from your phone's own location service (on most phones, Google Location Accuracy). It works under Google's terms and your phone's settings.</li>
+<li>Android's network location comes from your phone's own location service (on most phones, Google Location Accuracy). It works under Google's terms and your phone's settings. During setup, the app may ask you to turn it on, through Google's own dialog.</li>
 <li>If you allowed your phone to share usage and diagnostics with Google, Google Play may give us crash statistics about the app. Google provides these under its own terms, and they do not identify you to us.</li>
 <li>If backup is on in your phone's settings, Android may copy the app's files into your phone's backup in your Google account, under Google's terms. We cannot read those backups.</li>
 </ul>
@@ -336,11 +336,11 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:v
 <p>Uninstalling the app, or clearing its storage in Android's settings, deletes everything the app stored on your phone.</p>
 <h2 id="rights"><a class="anchor" href="#rights">10. Your choices and rights</a></h2>
 <ul>
-<li><strong>Stop recording</strong> at any time: tap <strong>Stop</strong>.</li>
-<li><strong>Choose what is sent:</strong> use the switches in <strong>Settings → Data</strong>. You can change them at any time.</li>
-<li><strong>Delete your data on our servers:</strong> email your install ID to <strong>team@odyssean.space</strong>. You find it in the app: menu ⋮ → <strong>Settings</strong> → <strong>Install ID</strong> (tap it to copy). We delete the data stored under that ID, including crash reports, within 30 days and confirm by email.</li>
+<li><strong>Stop positioning</strong> at any time: tap <strong>Stop</strong> in its notification, or menu ☰ → <strong>Settings</strong> → <strong>Stop positioning now</strong>. Opening the app turns it on again. It also shuts down by itself when the car has not driven for a while (<strong>Settings</strong> → <strong>Shut down after no driving</strong>).</li>
+<li><strong>Choose what is sent:</strong> use the switches in <strong>Settings → What we receive</strong>. You can change them at any time.</li>
+<li><strong>Delete your data on our servers:</strong> email your install ID to <strong>team@odyssean.space</strong>. You find it in the app: menu ☰ → <strong>Settings</strong> → <strong>Install ID</strong> (tap it to copy). We delete the data stored under that ID, including crash reports, within 30 days and confirm by email.</li>
 <li><strong>Delete the data on your phone:</strong> uninstall the app, or clear its storage in Android's settings.</li>
-<li><strong>Get a copy of your data:</strong> email us your install ID. Anyone who has seen your screen could know that ID, so before we send a copy we ask you to show that the phone is yours: either send a problem report from the app with a code we give you (this needs <strong>Crash reports and app journal</strong> on), or tell us the date, time and place of one of your recorded trips.</li>
+<li><strong>Get a copy of your data:</strong> email us your install ID. Anyone who has seen your screen could know that ID, so before we send a copy we ask you to show that the phone is yours: either send a problem report from the app with a code we give you (this needs <strong>Bug reports</strong> on), or tell us the date, time and place of one of your recorded trips.</li>
 <li><strong>Correct your data:</strong> the data is recorded by the phone's sensors, so it cannot really be corrected, but we can delete it.</li>
 <li><strong>Withdraw consent:</strong> turn the switch off. This does not affect what was sent before; to remove that, ask us to delete it.</li>
 <li><strong>Object</strong> to our use of crash reports and the journal: turn the switch off, or write to us.</li>
