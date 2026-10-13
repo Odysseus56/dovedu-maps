@@ -4,7 +4,8 @@
 For each of the last three UTC days, the first source that answers:
   1. IGS/BKG's daily merged file (BRDC00IGS_R, else BRDC00WRD_R, else BRDC00WRD_S): the one the app used to fetch itself;
   2. for a finished day, Wuhan University's IGS archive copy of BRDC00IGS_R (anonymous FTP);
-  3. for today, our own merge of the stations' hourly navigation files in Wuhan's archive (the last 6 hours, every station):
+  3. for today, and for yesterday until its daily file is out (the first hours after midnight UTC), our own merge of the
+     stations' hourly navigation files in Wuhan's archive (those of the last 3 hours that belong to the day):
      one RINEX 3 header (the first station's, with its ionosphere lines) and every record once. It is written as
      BRDC00WRD_S_<day>, the name of BKG's own file of the day so far.
 BKG answers from few places some days (2026-10-08 and -11: neither the founder's networks in Spain nor GitHub's runners).
@@ -40,11 +41,15 @@ def ftp():
 
 
 def whu_daily(day):
-    n = names(day)[0]; buf = io.BytesIO()
-    try:
-        f = ftp(); f.retrbinary(f'RETR /pub/gps/data/daily/{day[:4]}/brdc/{n}', buf.write); f.close()
-        if good(buf.getvalue()): return n, buf.getvalue()
-    except Exception as e: print(f'  whu daily {n}: {type(e).__name__} {str(e)[:80]}')
+    n = names(day)[0]
+    for _ in range(2):                                    # a transfer cut short (EOFError on 2026-10-13) is tried once more
+        buf = io.BytesIO()
+        try:
+            f = ftp(); f.retrbinary(f'RETR /pub/gps/data/daily/{day[:4]}/brdc/{n}', buf.write); f.close()
+            if good(buf.getvalue()): return n, buf.getvalue()
+        except Exception as e:
+            print(f'  whu daily {n}: {type(e).__name__} {str(e)[:80]}')
+            if 'Failed to open' in str(e): break             # not published (yet): asking again changes nothing
     return None
 
 
@@ -67,7 +72,7 @@ def whu_merge(day, now, per_hour=40):
     f = ftp(); head = None; seen = set(); recs = []; files = 0
     for back in range(3):
         t = now - datetime.timedelta(hours=back)
-        if t.strftime('%Y%j') != day: break
+        if t.strftime('%Y%j') != day: continue           # an hour of the other day
         folder = f'/pub/gps/data/hourly/{day[:4]}/{day[4:]}/{t:%H}'
         try: listing = [x.rsplit('/', 1)[-1] for x in f.nlst(folder)]
         except Exception: continue
@@ -99,7 +104,7 @@ def whu_merge(day, now, per_hour=40):
 now = datetime.datetime.now(datetime.timezone.utc); kept = []
 for back in range(3):
     day = (now - datetime.timedelta(days=back)).strftime('%Y%j'); print(day)
-    got = bkg(day) or (whu_daily(day) if back > 0 else None) or (whu_merge(day, now) if back == 0 else None)
+    got = bkg(day) or (whu_daily(day) if back > 0 else None) or (whu_merge(day, now) if back < 2 else None)
     if got: (OUT / got[0]).write_bytes(got[1]); kept.append(got[0]); print(f'  wrote {got[0]} ({len(got[1])} B)')
     else: print('  nothing')
 print('kept:', kept)

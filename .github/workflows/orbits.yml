@@ -2,12 +2,14 @@
 # into the release "orbits", replacing the older copy (.github/orbits.py: IGS/BKG when it answers, else Wuhan University's IGS
 # archive, and for today a merge of its stations' hourly files). The app downloads from here first. The release is never
 # "Latest", so the maps' catalogue link (releases/latest/download/catalog.json) keeps pointing at the map packs.
-# The timer asks every 5 minutes (founder, 2026-10-12) because GitHub drops most timed runs (4 of 26 hourly ones ran on
-# 2026-10-11/12, 4-42 min late); a run skips the work while today's file is under 15 minutes old.
+# GitHub drops most timed runs (4 of 26 hourly ones on 2026-10-11/12, then 2 of 156 five-minute ones in a night), so the
+# timer is the app's database (founder, 2026-10-13): every 15 minutes it asks for a run through the API (workflow_dispatch;
+# server/sql/003-orbits-timer.sql in the app's repository). The hourly schedule stays as a backup. A run skips the work while
+# today's file is under 10 minutes old.
 name: orbits
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '23 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -20,7 +22,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Skip while today's file is under 15 minutes old
+      - name: Skip while today's file is under 10 minutes old
         id: fresh
         run: |
           day=$(date -u +%Y%j)
@@ -28,7 +30,7 @@ jobs:
           if [ -n "$at" ]; then
             age=$(( $(date +%s) - $(date -d "$at" +%s) ))
             echo "today's file is $(( age / 60 )) min old"
-            if [ "$age" -lt 900 ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+            if [ "$age" -lt 600 ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
           fi
       - uses: actions/checkout@v4
         if: steps.fresh.outputs.skip != '1'
