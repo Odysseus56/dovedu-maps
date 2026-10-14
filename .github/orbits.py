@@ -1,4 +1,4 @@
-"""The last days' broadcast orbit files for the Taxi Antispoof app, written into ./out/ under the names the app asks for
+"""The last days' broadcast orbit files for the Dovedu app, written into ./out/ under the names the app asks for
 (solver/ephemeris.brdc_urls in the app repository). Run hourly by .github/workflows/orbits.yml; standard library only.
 
 For each of the last three UTC days, the first source that answers:
@@ -94,7 +94,7 @@ def whu_merge(day, now, per_hour=40):
     except Exception: f.close()
     if head is None or not recs: return None
     head = [l for l in head if not l[60:].startswith(('MARKER', 'COMMENT'))]
-    head.insert(1, f"{'merged by orbits.py (taxi-antispoof-maps) ' + now.strftime('%Y%m%d %H%M%S UTC'):60.60}COMMENT")
+    head.insert(1, f"{'merged by orbits.py (dovedu-maps) ' + now.strftime('%Y%m%d %H%M%S UTC'):60.60}COMMENT")
     recs.sort(key=lambda r: (r[0][:3], r[0][4:23]))
     text = '\n'.join(head + [l for r in recs for l in r]) + '\n'
     print(f'  merged {len(recs)} records from {files} station files')

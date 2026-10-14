@@ -1,4 +1,4 @@
-# Our own copy of the satellites' broadcast orbit files for the Taxi Antispoof app: the last three days' files go
+# Our own copy of the satellites' broadcast orbit files for the Dovedu app: the last three days' files go
 # into the release "orbits", replacing the older copy (.github/orbits.py: IGS/BKG when it answers, else Wuhan University's IGS
 # archive, and for today a merge of its stations' hourly files). The app downloads from here first. The release is never
 # "Latest", so the maps' catalogue link (releases/latest/download/catalog.json) keeps pointing at the map packs.
@@ -44,7 +44,7 @@ jobs:
         run: |
           set -u
           gh release view orbits >/dev/null 2>&1 || gh release create orbits --latest=false --title "Satellite orbits (hourly copy)" \
-            --notes "The last three days' daily broadcast orbit files (RINEX navigation, mixed constellations), refreshed every hour by .github/workflows/orbits.yml. Read by the Taxi Antispoof app."
+            --notes "The last three days' daily broadcast orbit files (RINEX navigation, mixed constellations), refreshed every hour by .github/workflows/orbits.yml. Read by the Dovedu app."
           gh release upload orbits out/* --clobber
           keep=$(ls out | paste -sd'|')
           gh release view orbits --json assets -q '.assets[].name' | grep -Ev "^(${keep})$" | while read -r a; do
