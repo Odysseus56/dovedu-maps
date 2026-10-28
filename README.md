@@ -23,7 +23,9 @@ Packs are built by the app's own tools (`tools/mapdata/` in the app repository) 
 
 The release `orbits` holds the last three days' daily broadcast orbit files (RINEX navigation), refreshed every hour by
 `.github/workflows/orbits.yml` with `.github/orbits.py`: IGS/BKG when it answers, else Wuhan University's IGS archive (for today,
-a merge of its stations' hourly files). The app downloads them from here first (through https://dovedu.app/dl/orbits/, which
+a merge of its stations' hourly files; a file without the GPS ionosphere lines gets a station's). Beside them, CODE's (Bern)
+forecast ionosphere maps for today and tomorrow (IONEX, `COD0OPSP0D_`/`COD0OPSP1D_<day>`, from ESA's or Wuhan's archive).
+The app downloads them from here first (through https://dovedu.app/dl/orbits/, which
 the website redirects to this release), because igs.bkg.bund.de does not answer from some networks. That release is never
 marked Latest.
 

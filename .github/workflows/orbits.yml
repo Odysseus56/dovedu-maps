@@ -1,6 +1,7 @@
 # Our own copy of the satellites' broadcast orbit files for the Dovedu app: the last three days' files go
 # into the release "orbits", replacing the older copy (.github/orbits.py: IGS/BKG when it answers, else Wuhan University's IGS
-# archive, and for today a merge of its stations' hourly files). The app downloads from here first. The release is never
+# archive, and for today a merge of its stations' hourly files; a file without the GPS ionosphere lines gets a station's), with
+# CODE's forecast ionosphere maps for today and tomorrow (from ESA's or Wuhan's archive). The app downloads from here first. The release is never
 # "Latest", so the maps' catalogue link (releases/latest/download/catalog.json) keeps pointing at the map packs.
 # GitHub drops most timed runs (4 of 26 hourly ones on 2026-10-11/12, then 2 of 156 five-minute ones in a night), so the
 # timer is the app's database (founder, 2026-10-13): every 15 minutes it asks for a run through the API (workflow_dispatch;
@@ -44,7 +45,7 @@ jobs:
         run: |
           set -u
           gh release view orbits >/dev/null 2>&1 || gh release create orbits --latest=false --title "Satellite orbits (hourly copy)" \
-            --notes "The last three days' daily broadcast orbit files (RINEX navigation, mixed constellations), refreshed every hour by .github/workflows/orbits.yml. Read by the Dovedu app."
+            --notes "The last three days' daily broadcast orbit files (RINEX navigation, mixed constellations) and CODE's forecast ionosphere maps for today and tomorrow (IONEX), refreshed every hour by .github/workflows/orbits.yml. Read by the Dovedu app."
           gh release upload orbits out/* --clobber
           keep=$(ls out | paste -sd'|')
           gh release view orbits --json assets -q '.assets[].name' | grep -Ev "^(${keep})$" | while read -r a; do
