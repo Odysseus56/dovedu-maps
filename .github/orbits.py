@@ -17,6 +17,11 @@ Also CODE's (Bern) forecast ionosphere maps (IONEX) for today and tomorrow, unde
 in the app repository): today's out that morning (COD0OPSP0D_, about 07:15 UTC) and out the morning before (COD0OPSP1D_), and
 tomorrow's out this morning (COD0OPSP1D_). From ESA's archive, else Wuhan's (anonymous FTP, byte for byte as CODE wrote them),
 else the copy already in our release, so a run that reaches neither keeps them.
+
+And predicted orbits (solver/ephemeris.predicted_names in the app repository): Wuhan University's hourly multi-GNSS ultra-rapid
+file (WUM0MGXNRT: GPS, GLONASS, Galileo, BeiDou; a day observed up to its issue, a day predicted after, 5-min epochs, out 1-2 h
+after the issue) cut to the last PRED_OBS_H observed hours and the predicted day on 15-min epochs (some 0.4 MB instead of 1.9),
+for each of the last PRED_KEEP issue hours: our release's copy when it has one, else cut from Wuhan's archive (anonymous FTP).
 """
 import datetime, ftplib, gzip, io, os, re, sys, urllib.request
 from pathlib import Path
@@ -26,6 +31,7 @@ WHU = 'igs.gnsswhu.cn'
 MIN_BYTES = 10_000
 IONEX_FTP = (('gssc.esa.int', '/gnss/products/ionex/{y}/{doy}/'), (WHU, '/pub/gps/products/ionex/{y}/{doy}/'))
 RELEASE = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Odysseus56/dovedu-maps')}/releases/download/orbits/"
+PRED_OBS_H, PRED_KEEP = 6, 8      # the app repository's solver/ephemeris.PRED_OBS_H and PRED_LAG_H: change them together
 
 
 def names(day):
@@ -179,6 +185,61 @@ def ionex(now):
     return out
 
 
+def pred_name(issue):
+    """Our cut's name for an issue hour (GPS time; the 18 s from UTC are no matter): the product's long name with the cut's
+    first epoch, length and step."""
+    return f'WUM0MGXNRT_{issue - datetime.timedelta(hours=PRED_OBS_H):%Y%j%H%M}_{PRED_OBS_H + 24}H_15M_ORB.SP3.gz'
+
+
+def good_sp3(raw):
+    try: t = gzip.decompress(raw); return len(raw) >= 50_000 and t[:1] == b'#' and b'\n* ' in t and t.rstrip().endswith(b'EOF')
+    except OSError: return False
+
+
+def cut(text):
+    """Wuhan's file -> (issue, our cut): the epochs from PRED_OBS_H before the issue (the first epoch with a predicted orbit,
+    flag P in column 80) on whole quarter hours, the header's first epoch, count and step rewritten. None without a prediction."""
+    lines = text.splitlines(); first = next(i for i, l in enumerate(lines) if l.startswith('* '))
+    head, blocks = list(lines[:first]), []
+    for l in lines[first:]:
+        if l.startswith('* '): blocks.append([l])
+        elif l.startswith('EOF'): break
+        elif blocks: blocks[-1].append(l)
+    def when(b):
+        p = b[0][2:].split(); return datetime.datetime(int(p[0]), int(p[1]), int(p[2]), int(p[3]), int(p[4]), int(float(p[5])))
+    issue = next((when(b) for b in blocks if any(l.startswith('P') and l[79:80] == 'P' for l in b[1:])), None)
+    if issue is None: return None
+    keep = [b for b in blocks if when(b) >= issue - datetime.timedelta(hours=PRED_OBS_H) and (when(b) - issue).total_seconds() % 900 == 0]
+    t0 = when(keep[0]); g = (t0 - datetime.datetime(1980, 1, 6)).total_seconds(); mjd = t0 - datetime.datetime(1858, 11, 17)
+    head[0] = head[0][:3] + f'{t0.year:4d} {t0.month:2d} {t0.day:2d} {t0.hour:2d} {t0.minute:2d} {t0.second:11.8f} {len(keep):7d}' + head[0][39:]
+    head[1] = f'## {int(g // 604800):4d} {g % 604800:15.8f} {900.0:14.8f} {mjd.days:5d} {mjd.seconds / 86400:15.13f}'
+    head.insert(max(i for i, l in enumerate(head) if l.startswith('/*')) + 1, f'/* cut by orbits.py (dovedu-maps): {PRED_OBS_H} h observed, 24 h predicted, 15 min')
+    return issue, '\n'.join(head + [l for b in keep for l in b] + ['EOF']) + '\n'
+
+
+def predicted(now):
+    """[(name, bytes)] of our cuts of the last PRED_KEEP issue hours that are out, each from our release, else cut from Wuhan's
+    original (in the GPS week folder of its first epoch, or the next)."""
+    out = []
+    for h in range(1, PRED_KEEP + 1):
+        issue = now.replace(minute=0, second=0, microsecond=0) - datetime.timedelta(hours=h); name = pred_name(issue)
+        try:
+            with urllib.request.urlopen(RELEASE + name, timeout=30) as r: raw = r.read()
+        except Exception: raw = None
+        if raw is None or not good_sp3(raw):
+            start = (issue - datetime.timedelta(days=1)).replace(tzinfo=None); src = f'WUM0MGXNRT_{start:%Y%j%H%M}_02D_05M_ORB.SP3.gz'
+            week = (start - datetime.datetime(1980, 1, 6)).days // 7; raw = None
+            for w in (week, week + 1):
+                got = ftp_get(WHU, f'/pub/gnss/products/mgex/{w}/{src}')
+                if got is None: continue
+                try: c = cut(gzip.decompress(got).decode('latin-1'))
+                except Exception as e: print(f'  {src}: {type(e).__name__} {str(e)[:80]}'); continue
+                if c is not None and pred_name(c[0]) == name: raw = gzip.compress(c[1].encode('latin-1')); break
+        if raw is not None and good_sp3(raw): out.append((name, raw))
+        else: print(f'  {name}: not out yet, or nowhere')
+    return out
+
+
 now = datetime.datetime.now(datetime.timezone.utc); kept = []
 for back in range(3):
     day = (now - datetime.timedelta(days=back)).strftime('%Y%j'); print(day)
@@ -192,6 +253,10 @@ for back in range(3):
 print('ionosphere maps')
 try:
     for name, raw in ionex(now): (OUT / name).write_bytes(raw); kept.append(name); print(f'  wrote {name} ({len(raw)} B)')
+except Exception as e: print(f'  {type(e).__name__} {str(e)[:120]}')
+print('predicted orbits')
+try:
+    for name, raw in predicted(now): (OUT / name).write_bytes(raw); kept.append(name); print(f'  wrote {name} ({len(raw)} B)')
 except Exception as e: print(f'  {type(e).__name__} {str(e)[:120]}')
 print('kept:', kept)
 sys.exit(0 if any(n.startswith('BRDC') for n in kept) else 1)
