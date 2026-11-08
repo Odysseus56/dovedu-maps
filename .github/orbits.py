@@ -247,7 +247,9 @@ for back in range(3):
     if got:
         try: got = (got[0], with_iono(got[1], day, now))
         except Exception as e: print(f'  ionosphere lines: {type(e).__name__} {str(e)[:80]}')
-    got = got or (whu_merge(day, now) if back < 2 else None)
+    if not got and back < 2:
+        try: got = whu_merge(day, now)
+        except Exception as e: print(f'  whu merge: {type(e).__name__} {str(e)[:80]}')   # Wuhan not answering costs this day's file, not the other days'
     if got: (OUT / got[0]).write_bytes(got[1]); kept.append(got[0]); print(f'  wrote {got[0]} ({len(got[1])} B)')
     else: print('  nothing')
 print('ionosphere maps')

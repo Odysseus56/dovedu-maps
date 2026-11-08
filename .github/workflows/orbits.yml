@@ -47,10 +47,16 @@ jobs:
           set -u
           gh release view orbits >/dev/null 2>&1 || gh release create orbits --latest=false --title "Satellite orbits (hourly copy)" \
             --notes "The last three days' daily broadcast orbit files (RINEX navigation, mixed constellations), CODE's forecast ionosphere maps for today and tomorrow (IONEX) and the last 8 hours' predicted orbit files (SP3, cut from Wuhan University's WUM0MGXNRT), refreshed every hour by .github/workflows/orbits.yml. Read by the Dovedu app."
-          gh release upload orbits out/* --clobber
+          # gh deletes a file's old copy before uploading the new one and retries only the upload, so one 500/502 from GitHub on a
+          # delete ends it with files possibly gone. Each try lists the release afresh and uploads whatever the last one left.
+          for try in 1 2 3 4; do
+            gh release upload orbits out/* --clobber && break
+            [ "$try" -lt 4 ] || exit 1
+            echo "upload failed (try $try of 4)"; sleep $(( try * 30 ))
+          done
           keep=$(ls out | paste -sd'|')
           gh release view orbits --json assets -q '.assets[].name' | grep -Ev "^(${keep})$" | while read -r a; do
-            gh release delete-asset orbits "$a" -y && echo "deleted $a"
+            gh release delete-asset orbits "$a" -y && echo "deleted $a" || echo "not deleted: $a (an old file left over; the next run tries again)"
           done
       - name: Keep the schedule alive (GitHub pauses a public repository's schedules after 60 days without a commit)
         if: steps.fresh.outputs.skip != '1'
