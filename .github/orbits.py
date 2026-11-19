@@ -1,37 +1,51 @@
 """The last days' broadcast orbit files for the Dovedu app, written into ./out/ under the names the app asks for
-(solver/ephemeris.brdc_urls in the app repository). Run hourly by .github/workflows/orbits.yml; standard library only.
+(solver/ephemeris.brdc_urls in the app repository). Run every 15 minutes by .github/workflows/orbits.yml; standard library only.
 
-For each of the last three UTC days, the first source that answers:
-  1. IGS/BKG's daily merged file (BRDC00IGS_R, else BRDC00WRD_R, else BRDC00WRD_S): the one the app used to fetch itself;
-  2. for a finished day, Wuhan University's IGS archive copy of BRDC00IGS_R (anonymous FTP);
-  3. for today, and for yesterday until its daily file is out (the first hours after midnight UTC), our own merge of the
-     stations' hourly navigation files in Wuhan's archive (those of the last 3 hours that belong to the day):
-     one RINEX 3 header (the first station's, with its ionosphere lines) and every record once. It is written as
-     BRDC00WRD_S_<day>, the name of BKG's own file of the day so far.
-BKG answers from few places some days (2026-10-08 and -11: neither the founder's networks in Spain nor GitHub's runners).
+Every file comes from the first archive that has it, in the order ESA (gssc.esa.int), IGS/BKG (igs.bkg.bund.de), Wuhan
+University's IGS archive (igs.gnsswhu.cn), and else from our own copy: the release's files as they were before this run, which
+the workflow downloads into ./prev/. Each archive has gone unreachable from GitHub's runners for a day or more (ESA on
+2026-11-10/11 and 11-15/16, BKG from 2026-11-17; Wuhan refuses busy hours: "too many connected users", "bad IP"), so a run that
+reaches none keeps what we had rather than dropping it. A file that never changes once out (a finished day's daily file, a
+forecast map, a predicted cut) is taken from our copy and asked of no archive.
+
+When none of the archives answered for a file we needed (no connection, timed out, refused, cut short; a "not found" is an
+answer: the file is not out yet), the file is listed in ./alerts.txt and our copy kept in its place; the workflow uploads, then
+fails the run, so GitHub sends an email.
+
+For each of the last three UTC days:
+  - today: our merge of the stations' hourly navigation files of the last 3 hours in ESA's archive, else BKG's file of the day
+    so far (BRDC00WRD_S), else our merge from Wuhan's archive. A merge has one RINEX 3 header (the first station's with
+    ionosphere lines) and every record once, and is written as BRDC00WRD_S_<day>, the name of BKG's own file of the day so far;
+  - a finished day: our copy when it is the day's final file (BRDC00IGS_R or BRDC00WRD_R), else that file from ESA, BKG or
+    Wuhan, and for yesterday in the first 2 hours after midnight UTC, before its daily file is out, our merge of its last hours.
 BKG's merged file comes without the GPS ionosphere lines (IONOSPHERIC CORR GPSA / GPSB) about half the time (October 2026):
-such a file gets the lines of a station's hourly navigation file of the same day in Wuhan's archive (every receiver decodes the
-same GPS broadcast).
+such a file gets the lines of a station's hourly navigation file of the same day (every receiver decodes the same GPS broadcast).
 
 Also CODE's (Bern) forecast ionosphere maps (IONEX) for today and tomorrow, under their own names (solver/ephemeris.iono_names
 in the app repository): today's out that morning (COD0OPSP0D_, about 07:15 UTC) and out the morning before (COD0OPSP1D_), and
-tomorrow's out this morning (COD0OPSP1D_). From ESA's archive, else Wuhan's (anonymous FTP, byte for byte as CODE wrote them),
-else the copy already in our release, so a run that reaches neither keeps them.
+tomorrow's out this morning (COD0OPSP1D_). Our copy, else ESA's archive, else Wuhan's (anonymous FTP, byte for byte as CODE
+wrote them).
 
 And predicted orbits (solver/ephemeris.predicted_names in the app repository): Wuhan University's hourly multi-GNSS ultra-rapid
 file (WUM0MGXNRT: GPS, GLONASS, Galileo, BeiDou; a day observed up to its issue, a day predicted after, 5-min epochs, out 1-2 h
 after the issue) cut to the last PRED_OBS_H observed hours and the predicted day on 15-min epochs (some 0.4 MB instead of 1.9),
-for each of the last PRED_KEEP issue hours: our release's copy when it has one, else cut from Wuhan's archive (anonymous FTP).
+for each of the last PRED_KEEP issue hours: our copy when it has one, else cut from Wuhan's archive, the product's only one. One
+issue hour missed is usual; an alert only when none of the last PRED_ALERT_H hours' is served and Wuhan did not answer.
 """
-import datetime, ftplib, gzip, io, os, re, sys, urllib.request
+import contextlib, datetime, ftplib, gzip, io, re, sys, urllib.error, urllib.request
 from pathlib import Path
 
 OUT = Path('out'); OUT.mkdir(exist_ok=True)
-WHU = 'igs.gnsswhu.cn'
+PREV = Path('prev')                   # our copy: the release's files before this run (orbits.yml downloads them)
+ALERTS = Path('alerts.txt')           # the files none of the archives answered for; orbits.yml fails the run on them
+ESA, WHU = 'gssc.esa.int', 'igs.gnsswhu.cn'
+DAILY = {ESA: '/gnss/data/daily/{y}/{doy}/', WHU: '/pub/gps/data/daily/{y}/brdc/'}
+HOURLY = {ESA: '/gnss/data/hourly/{y}/{doy}/{h}', WHU: '/pub/gps/data/hourly/{y}/{doy}/{h}'}
+BKG = 'https://igs.bkg.bund.de/root_ftp/IGS/BRDC/{y}/{doy}/'
 MIN_BYTES = 10_000
-IONEX_FTP = (('gssc.esa.int', '/gnss/products/ionex/{y}/{doy}/'), (WHU, '/pub/gps/products/ionex/{y}/{doy}/'))
-RELEASE = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'Odysseus56/dovedu-maps')}/releases/download/orbits/"
+IONEX_FTP = ((ESA, '/gnss/products/ionex/{y}/{doy}/'), (WHU, '/pub/gps/products/ionex/{y}/{doy}/'))
 PRED_OBS_H, PRED_KEEP = 6, 8      # the app repository's solver/ephemeris.PRED_OBS_H and PRED_LAG_H: change them together
+PRED_ALERT_H = 4                  # Wuhan's file is out 1-2 h after its issue: none of the last 4 hours' means hours of failures
 
 
 def names(day):
@@ -43,29 +57,71 @@ def good(raw):
     except OSError: return False
 
 
-def bkg(day):
-    for n in names(day):
-        try:
-            with urllib.request.urlopen(f'https://igs.bkg.bund.de/root_ftp/IGS/BRDC/{day[:4]}/{day[4:]}/{n}', timeout=10) as r: raw = r.read()
-            if good(raw): return n, raw
-        except Exception as e: print(f'  bkg {n}: {type(e).__name__} {str(e)[:80]}')
-    return None
+def ours(name):
+    """Our copy of the file (the release's, downloaded into PREV), else None."""
+    p = PREV / name
+    return p.read_bytes() if p.is_file() else None
 
 
-def ftp():
-    f = ftplib.FTP(WHU, timeout=30); f.login(); return f
+def missing(e):
+    """An archive's answer that it has no such file (HTTP 404, FTP 5xx: not out yet), as against a failure to reach it."""
+    return isinstance(e, ftplib.error_perm) or (isinstance(e, urllib.error.HTTPError) and e.code == 404)
 
 
-def whu_daily(day):
-    n = names(day)[0]
-    for _ in range(2):                                    # a transfer cut short (EOFError on 2026-10-13) is tried once more
+def first(tries):
+    """(the first (name, bytes) one of tries [(archive, fn)] gives, else None; None when some archive answered, else the list of
+    their failures). fn returns None, or raises a 404 or 550, when the archive answers that it has no such file."""
+    failed, reached = [], False
+    for src, fn in tries:
+        try: got = fn()
+        except Exception as e:
+            print(f'  {src}: {type(e).__name__} {str(e)[:80]}')
+            if missing(e): reached = True
+            else: failed.append(f'{src}: {type(e).__name__}')
+            continue
+        reached = True
+        if got: print(f'  {src}: {got[0]}'); return got, None
+        print(f'  {src}: not out yet')
+    return None, (None if reached else failed)
+
+
+@contextlib.contextmanager
+def ftp(host):
+    """A logged-in anonymous FTP session, closed after without a QUIT (to a server that stopped answering it waits 30 s more)."""
+    f = ftplib.FTP(host, timeout=30)
+    try: f.login(); yield f
+    finally: f.close()
+
+
+def ftp_get(host, path):
+    """The file's bytes. A refusal or a transfer cut short (421 too many users, 425, EOFError on 2026-10-13) is tried once more;
+    a 550 (not there) and a timeout (the archive is down, and each costs 30 s) are not."""
+    for again in (False, True):
         buf = io.BytesIO()
         try:
-            f = ftp(); f.retrbinary(f'RETR /pub/gps/data/daily/{day[:4]}/brdc/{n}', buf.write); f.close()
-            if good(buf.getvalue()): return n, buf.getvalue()
+            with ftp(host) as f: f.retrbinary(f'RETR {path}', buf.write)
+            return buf.getvalue()
+        except (ftplib.error_perm, TimeoutError): raise
         except Exception as e:
-            print(f'  whu daily {n}: {type(e).__name__} {str(e)[:80]}')
-            if 'Failed to open' in str(e): break             # not published (yet): asking again changes nothing
+            if again: raise
+            print(f'  {host} {path.rsplit("/", 1)[-1]}: {type(e).__name__} {str(e)[:80]}, once more')
+
+
+def daily(host, day):
+    """The finished day's BRDC00IGS_R from host's archive."""
+    n = names(day)[0]; raw = ftp_get(host, DAILY[host].format(y=day[:4], doy=day[4:]) + n)
+    return (n, raw) if good(raw) else None
+
+
+def bkg(day, wanted):
+    """BKG's first file of wanted (names) it has. A failure to reach it ends the try at once: each costs 10 s."""
+    for n in wanted:
+        try:
+            with urllib.request.urlopen(BKG.format(y=day[:4], doy=day[4:]) + n, timeout=10) as r: raw = r.read()
+        except urllib.error.HTTPError as e:
+            if e.code == 404: continue
+            raise
+        if good(raw): return n, raw
     return None
 
 
@@ -82,32 +138,33 @@ def split(text):
     return head, recs
 
 
-def whu_merge(day, now, per_hour=40):
-    """Today's records from the stations' hourly navigation files of the last 3 hours (one station per country, at most
-    per_hour an hour: spread over the world, so every satellite is in view of some), each record once."""
-    f = ftp(); head = None; seen = set(); recs = []; files = 0
-    for back in range(3):
-        t = now - datetime.timedelta(hours=back)
-        if t.strftime('%Y%j') != day: continue           # an hour of the other day
-        folder = f'/pub/gps/data/hourly/{day[:4]}/{day[4:]}/{t:%H}'
-        try: listing = [x.rsplit('/', 1)[-1] for x in f.nlst(folder)]
-        except Exception: continue
-        countries = set(); pick = []
-        for n in sorted(listing):
-            if n.endswith('_01H_MN.rnx.gz') and n[6:9] not in countries and len(pick) < per_hour: countries.add(n[6:9]); pick.append(n)
-        for n in pick:
-            buf = io.BytesIO()
-            try: f.retrbinary(f'RETR {folder}/{n}', buf.write); text = gzip.decompress(buf.getvalue()).decode('latin-1')
-            except Exception: continue
-            try: h, rs = split(text)
-            except StopIteration: continue
-            files += 1
-            if head is None and any('IONOSPHERIC CORR' in l for l in h): head = h
-            for r in rs:
-                key = r[0][:23]                                   # satellite and its epoch: one record each
-                if key not in seen: seen.add(key); recs.append(r)
-    try: f.quit()
-    except Exception: f.close()
+def merge(host, day, now, per_hour=40):
+    """The day's records from the stations' hourly navigation files of the last 3 hours in host's archive (one station per
+    country, at most per_hour an hour: spread over the world, so every satellite is in view of some), each record once. None
+    when the archive has no station file of those hours yet; an error when the archive stops answering halfway (a merge is
+    whole or not at all)."""
+    head = None; seen = set(); recs = []; files = 0
+    with ftp(host) as f:
+        for back in range(3):
+            t = now - datetime.timedelta(hours=back)
+            if t.strftime('%Y%j') != day: continue           # an hour of the other day
+            folder = HOURLY[host].format(y=day[:4], doy=day[4:], h=f'{t:%H}')
+            try: listing = [x.rsplit('/', 1)[-1] for x in f.nlst(folder)]
+            except ftplib.error_perm: continue               # the hour's folder is not there yet
+            countries = set(); pick = []
+            for n in sorted(listing):
+                if n.endswith('_01H_MN.rnx.gz') and n[6:9] not in countries and len(pick) < per_hour: countries.add(n[6:9]); pick.append(n)
+            for n in pick:
+                buf = io.BytesIO()
+                try: f.retrbinary(f'RETR {folder}/{n}', buf.write)
+                except ftplib.error_perm: continue           # gone since the listing
+                try: h, rs = split(gzip.decompress(buf.getvalue()).decode('latin-1'))
+                except Exception: continue                   # a station's broken file
+                files += 1
+                if head is None and any('IONOSPHERIC CORR' in l for l in h): head = h
+                for r in rs:
+                    key = r[0][:23]                                   # satellite and its epoch: one record each
+                    if key not in seen: seen.add(key); recs.append(r)
     if head is None or not recs: return None
     head = [l for l in head if not l[60:].startswith(('MARKER', 'COMMENT'))]
     head.insert(1, f"{'merged by orbits.py (dovedu-maps) ' + now.strftime('%Y%m%d %H%M%S UTC'):60.60}COMMENT")
@@ -118,27 +175,29 @@ def whu_merge(day, now, per_hour=40):
 
 
 def station_iono(day, now, tries=12):
-    """(station file, its IONOSPHERIC CORR lines) from a station's hourly navigation file of the day in Wuhan's archive that has
-    the GPS ones (the last 3 hours for today, a finished day's last 3), else None."""
+    """(station file, its IONOSPHERIC CORR lines) from a station's hourly navigation file of the day that has the GPS ones (the
+    last 3 hours for today, a finished day's last 3), in ESA's archive, else Wuhan's; else None."""
     hours = [now - datetime.timedelta(hours=b) for b in range(3)] if day == now.strftime('%Y%j') else \
             [datetime.datetime.strptime(day, '%Y%j') + datetime.timedelta(hours=h) for h in (23, 22, 21)]
-    f = ftp(); tried = 0
-    try:
-        for t in hours:
-            if t.strftime('%Y%j') != day: continue
-            folder = f'/pub/gps/data/hourly/{day[:4]}/{day[4:]}/{t:%H}'
-            try: listing = sorted(x.rsplit('/', 1)[-1] for x in f.nlst(folder))
-            except Exception: continue
-            for n in listing:
-                if not n.endswith('_01H_MN.rnx.gz') or tried >= tries: continue
-                tried += 1; buf = io.BytesIO()
-                try: f.retrbinary(f'RETR {folder}/{n}', buf.write); h, _ = split(gzip.decompress(buf.getvalue()).decode('latin-1'))
-                except Exception: continue
-                lines = [l for l in h if l[60:].startswith('IONOSPHERIC CORR')]
-                if any(l[:4] == 'GPSA' for l in lines) and any(l[:4] == 'GPSB' for l in lines): return n, lines
-    finally:
-        try: f.quit()
-        except Exception: f.close()
+    for host in (ESA, WHU):
+        try:
+            with ftp(host) as f:
+                tried = 0
+                for t in hours:
+                    if t.strftime('%Y%j') != day: continue
+                    folder = HOURLY[host].format(y=day[:4], doy=day[4:], h=f'{t:%H}')
+                    try: listing = sorted(x.rsplit('/', 1)[-1] for x in f.nlst(folder))
+                    except ftplib.error_perm: continue
+                    for n in listing:
+                        if not n.endswith('_01H_MN.rnx.gz') or tried >= tries: continue
+                        tried += 1; buf = io.BytesIO()
+                        try: f.retrbinary(f'RETR {folder}/{n}', buf.write)
+                        except ftplib.error_perm: continue
+                        try: h, _ = split(gzip.decompress(buf.getvalue()).decode('latin-1'))
+                        except Exception: continue
+                        lines = [l for l in h if l[60:].startswith('IONOSPHERIC CORR')]
+                        if any(l[:4] == 'GPSA' for l in lines) and any(l[:4] == 'GPSB' for l in lines): return n, lines
+        except Exception as e: print(f'  ionosphere lines, {host}: {type(e).__name__} {str(e)[:80]}')
     return None
 
 
@@ -154,10 +213,29 @@ def with_iono(raw, day, now):
     return gzip.compress('\n'.join(lines[:end] + [note] + add + lines[end:]).encode('latin-1'))
 
 
-def ftp_get(host, path):
-    buf = io.BytesIO()
-    try: f = ftplib.FTP(host, timeout=30); f.login(); f.retrbinary(f'RETR {path}', buf.write); f.quit(); return buf.getvalue()
-    except Exception as e: print(f'  {host} {path.rsplit("/", 1)[-1]}: {type(e).__name__} {str(e)[:80]}'); return None
+def broadcast(day, back, now):
+    """(name, bytes) of the day's file for the app (back: days before today), else None; and the alert when no archive answered."""
+    mine = None
+    for n in names(day):
+        raw = ours(n)
+        if raw and good(raw): mine = (n, raw); break
+    merges = [('ESA merge', lambda: merge(ESA, day, now)), ('Wuhan merge', lambda: merge(WHU, day, now))]
+    if back == 0:
+        tries = [merges[0], ('BKG', lambda: bkg(day, names(day)[2:])), merges[1]]
+    elif mine and not mine[0].startswith('BRDC00WRD_S'):
+        tries = []                                            # the day's final file: it never changes
+    else:
+        tries = [('ESA', lambda: daily(ESA, day)), ('BKG', lambda: bkg(day, names(day))), ('Wuhan', lambda: daily(WHU, day))]
+        if back == 1 and now.hour < 2: tries += merges        # yesterday's last hours are among the last 3
+    got, failed = first(tries) if tries else (None, None)
+    alert = None
+    if got is None:
+        got = mine; print(f'  ours: {mine[0]}' if mine else '  nothing')
+        if failed: alert = f'{day}: no archive answered ({", ".join(failed)}); ' + (f'our copy {mine[0]} kept' if mine else 'none in our copy either')
+    if got:
+        try: got = (got[0], with_iono(got[1], day, now))
+        except Exception as e: print(f'  ionosphere lines: {type(e).__name__} {str(e)[:80]}')
+    return got, alert
 
 
 def good_ionex(raw):
@@ -166,23 +244,20 @@ def good_ionex(raw):
 
 
 def ionex(now):
-    """[(name, bytes)] of the forecast maps wanted (the module's docstring), each from the first source that has it."""
-    out = []
+    """([(name, bytes)] of the forecast maps wanted (the module's docstring), alerts): each from our copy (a map never changes
+    once out), else ESA's archive, else Wuhan's."""
+    out, alerts = [], []
     for back, kinds in ((0, ('P0D', 'P1D')), (-1, ('P1D',))):
-        d = now - datetime.timedelta(days=back); day = d.strftime('%Y%j')
+        day = (now - datetime.timedelta(days=back)).strftime('%Y%j')
         for k in kinds:
-            name = f'COD0OPS{k}_{day}0000_01D_01H_GIM.INX.gz'; raw = None
-            for host, folder in IONEX_FTP:
-                raw = ftp_get(host, folder.format(y=day[:4], doy=day[4:]) + name)
-                if good_ionex(raw): break
-            if not good_ionex(raw):
-                try:
-                    with urllib.request.urlopen(RELEASE + name, timeout=30) as r: raw = r.read()
-                    if good_ionex(raw): print(f'  {name}: our release\'s copy kept')
-                except Exception: raw = None
-            if good_ionex(raw): out.append((name, raw))
-            else: print(f'  {name}: not out yet, or nowhere')
-    return out
+            name = f'COD0OPS{k}_{day}0000_01D_01H_GIM.INX.gz'; raw = ours(name)
+            if good_ionex(raw): print(f'  ours: {name}'); out.append((name, raw)); continue
+            def get(host, path):
+                raw = ftp_get(host, path); return (name, raw) if good_ionex(raw) else None
+            got, failed = first([(host, lambda h=host, p=folder.format(y=day[:4], doy=day[4:]) + name: get(h, p)) for host, folder in IONEX_FTP])
+            if got: out.append(got)
+            elif failed: alerts.append(f'{name}: no archive answered ({", ".join(failed)})')
+    return out, alerts
 
 
 def pred_name(issue):
@@ -218,47 +293,45 @@ def cut(text):
 
 
 def predicted(now):
-    """[(name, bytes)] of our cuts of the last PRED_KEEP issue hours that are out, each from our release, else cut from Wuhan's
-    original (in the GPS week folder of its first epoch, or the next)."""
-    out = []
+    """([(name, bytes)] of our cuts of the last PRED_KEEP issue hours that are out, alert or None): each from our copy, else cut
+    from Wuhan's original (in the GPS week folder of its first epoch, or the next)."""
+    out = []; fresh = reached = False
     for h in range(1, PRED_KEEP + 1):
         issue = now.replace(minute=0, second=0, microsecond=0) - datetime.timedelta(hours=h); name = pred_name(issue)
-        try:
-            with urllib.request.urlopen(RELEASE + name, timeout=30) as r: raw = r.read()
-        except Exception: raw = None
+        raw = ours(name)
         if raw is None or not good_sp3(raw):
             start = (issue - datetime.timedelta(days=1)).replace(tzinfo=None); src = f'WUM0MGXNRT_{start:%Y%j%H%M}_02D_05M_ORB.SP3.gz'
             week = (start - datetime.datetime(1980, 1, 6)).days // 7; raw = None
             for w in (week, week + 1):
-                got = ftp_get(WHU, f'/pub/gnss/products/mgex/{w}/{src}')
-                if got is None: continue
+                try: got = ftp_get(WHU, f'/pub/gnss/products/mgex/{w}/{src}')
+                except Exception as e:
+                    print(f'  {WHU} {src}: {type(e).__name__} {str(e)[:80]}')
+                    reached |= missing(e) and h <= PRED_ALERT_H; continue
+                reached |= h <= PRED_ALERT_H
                 try: c = cut(gzip.decompress(got).decode('latin-1'))
                 except Exception as e: print(f'  {src}: {type(e).__name__} {str(e)[:80]}'); continue
                 if c is not None and pred_name(c[0]) == name: raw = gzip.compress(c[1].encode('latin-1')); break
-        if raw is not None and good_sp3(raw): out.append((name, raw))
+        if raw is not None and good_sp3(raw): out.append((name, raw)); fresh |= h <= PRED_ALERT_H
         else: print(f'  {name}: not out yet, or nowhere')
-    return out
+    return out, (None if fresh or reached else f'predicted orbits: none of the last {PRED_ALERT_H} issue hours, and Wuhan did not answer')
 
 
-now = datetime.datetime.now(datetime.timezone.utc); kept = []
+now = datetime.datetime.now(datetime.timezone.utc); kept = []; alerts = []
 for back in range(3):
     day = (now - datetime.timedelta(days=back)).strftime('%Y%j'); print(day)
-    got = bkg(day) or (whu_daily(day) if back > 0 else None)
-    if got:
-        try: got = (got[0], with_iono(got[1], day, now))
-        except Exception as e: print(f'  ionosphere lines: {type(e).__name__} {str(e)[:80]}')
-    if not got and back < 2:
-        try: got = whu_merge(day, now)
-        except Exception as e: print(f'  whu merge: {type(e).__name__} {str(e)[:80]}')   # Wuhan not answering costs this day's file, not the other days'
+    got, alert = broadcast(day, back, now)
+    if alert: alerts.append(alert)
     if got: (OUT / got[0]).write_bytes(got[1]); kept.append(got[0]); print(f'  wrote {got[0]} ({len(got[1])} B)')
-    else: print('  nothing')
 print('ionosphere maps')
 try:
-    for name, raw in ionex(now): (OUT / name).write_bytes(raw); kept.append(name); print(f'  wrote {name} ({len(raw)} B)')
+    maps, a = ionex(now); alerts += a
+    for name, raw in maps: (OUT / name).write_bytes(raw); kept.append(name); print(f'  wrote {name} ({len(raw)} B)')
 except Exception as e: print(f'  {type(e).__name__} {str(e)[:120]}')
 print('predicted orbits')
 try:
-    for name, raw in predicted(now): (OUT / name).write_bytes(raw); kept.append(name); print(f'  wrote {name} ({len(raw)} B)')
+    cuts, a = predicted(now); alerts += [a] if a else []
+    for name, raw in cuts: (OUT / name).write_bytes(raw); kept.append(name); print(f'  wrote {name} ({len(raw)} B)')
 except Exception as e: print(f'  {type(e).__name__} {str(e)[:120]}')
 print('kept:', kept)
-sys.exit(0 if any(n.startswith('BRDC') for n in kept) else 1)
+if alerts: ALERTS.write_text('\n'.join(alerts) + '\n'); print('alerts:', *alerts, sep='\n  ')
+sys.exit(0 if any(n.startswith('BRDC') for n in kept) else 1)    # no broadcast file at all: the release is left as it is

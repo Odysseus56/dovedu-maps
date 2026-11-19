@@ -1,9 +1,11 @@
 # Our own copy of the satellites' broadcast orbit files for the Dovedu app: the last three days' files go
-# into the release "orbits", replacing the older copy (.github/orbits.py: IGS/BKG when it answers, else Wuhan University's IGS
-# archive, and for today a merge of its stations' hourly files; a file without the GPS ionosphere lines gets a station's), with
-# CODE's forecast ionosphere maps for today and tomorrow (from ESA's or Wuhan's archive), and the predicted orbit files of the last
-# 8 issue hours (Wuhan University's hourly multi-GNSS ultra-rapid product, cut to 30 h on 15-min epochs). The app downloads from here first. The release is never
-# "Latest", so the maps' catalogue link (releases/latest/download/catalog.json) keeps pointing at the map packs.
+# into the release "orbits", replacing the older copy (.github/orbits.py: each file from ESA's archive, else IGS/BKG's, else Wuhan
+# University's IGS archive, else the release's own copy; for today a merge of the stations' hourly files; a file without the GPS
+# ionosphere lines gets a station's), with CODE's forecast ionosphere maps for today and tomorrow, and the predicted orbit files of
+# the last 8 issue hours (Wuhan University's hourly multi-GNSS ultra-rapid product, cut to 30 h on 15-min epochs). The app
+# downloads from here first. The release is never "Latest", so the maps' catalogue link (releases/latest/download/catalog.json)
+# keeps pointing at the map packs. A file kept from the release's copy because no archive answered fails the run after the upload,
+# so GitHub sends an email.
 # GitHub drops most timed runs (4 of 26 hourly ones on 2026-10-11/12, then 2 of 156 five-minute ones in a night), so the
 # timer is the app's database (founder, 2026-10-13): every 15 minutes it asks for a run through the API (workflow_dispatch;
 # server/sql/003-orbits-timer.sql in the app's repository). The hourly schedule stays as a backup. A run skips the work while
@@ -34,10 +36,20 @@ jobs:
             echo "today's file is $(( age / 60 )) min old"
             if [ "$age" -lt 600 ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.fresh.outputs.skip != '1'
         with:
           sparse-checkout: .github
+      # orbits.py keeps a file from this copy when no archive has it: without the copy such a run would drop files, so a download
+      # that keeps failing ends the run with the release as it is.
+      - name: Download the release's copy, the last source of every file
+        if: steps.fresh.outputs.skip != '1'
+        run: |
+          for try in 1 2 3; do
+            gh release download orbits -D prev --clobber && break
+            [ "$try" -lt 3 ] || exit 1
+            echo "download failed (try $try of 3)"; sleep $(( try * 20 ))
+          done
       - name: Fetch the last three days' orbit files
         if: steps.fresh.outputs.skip != '1'
         run: python3 .github/orbits.py
@@ -65,3 +77,9 @@ jobs:
             git config user.name "orbits workflow"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit --allow-empty -m "keepalive: GitHub pauses scheduled workflows after 60 days without a commit" && git push
           fi
+      - name: Fail the run when no archive answered for a file (the release keeps our older copy of it)
+        if: steps.fresh.outputs.skip != '1'
+        run: |
+          [ -s alerts.txt ] || exit 0
+          while read -r a; do echo "::error title=No archive answered::$a"; done < alerts.txt
+          exit 1
