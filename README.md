@@ -1,37 +1,19 @@
 # Dovedu - Maps
 
-Offline map packs for the [Dovedu](https://dovedu.app) Android app: one region per pack, with the map, the road graph for routing and
-an address index, so the app shows the map, finds addresses and routes with no server.
-
-The app's **Download maps** reads `catalog.json` and fetches the pack's files from the release it links to. Each catalogue
-format has its own rolling release, `catalog-v<format>`, holding only a copy of the live `catalog.json` of that format: an
-app asks https://dovedu.app/dl/maps/catalog-v<its format>/catalog.json (apps up to 0.35.0: /dl/maps/catalog.json, format 3),
-which the app's website redirects here. So a new format goes live beside the old one and never strands an older app.
-Never delete a `catalog-v<n>` release while apps of that format are out: they lose their maps and road data.
-Older releases are kept so that a phone halfway through a download can finish it, and so that each format's catalogue
-keeps working. Latest marks the newest live release, for this page only: no app reads it.
+Data files for the [Dovedu](https://dovedu.app) app.
 
 ## Data and licences
 
-- Map, roads and addresses: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, Open Database License (ODbL).
-- Map style, sprites and fonts: [OpenFreeMap](https://openfreemap.org) "liberty" style.
-- Map tiles built with [Planetiler](https://github.com/onthegomap/planetiler); road graph built with [Valhalla](https://github.com/valhalla/valhalla).
-
-Packs are built by the app's own tools (`tools/mapdata/` in the app repository) and published here as GitHub releases.
-
-## Satellite orbits
-
-The release `orbits` holds the last three days' daily broadcast orbit files (RINEX navigation), refreshed every 15 minutes by
-`.github/workflows/orbits.yml` with `.github/orbits.py`: each file from ESA's archive, else IGS/BKG's, else Wuhan University's
-IGS archive (for today, a merge of the stations' hourly files; a file without the GPS ionosphere lines gets a station's), and
-when none of them answers, the release's own copy is kept and the run fails, so GitHub sends an email. Beside them, CODE's
-(Bern) forecast ionosphere maps for today and tomorrow (IONEX, `COD0OPSP0D_`/`COD0OPSP1D_<day>`, from ESA's or Wuhan's archive)
-and Wuhan University's predicted orbits of the last 8 issue hours (SP3, `WUM0MGXNRT_`).
-The app downloads them from here first (through https://dovedu.app/dl/orbits/, which
-the website redirects to this release), because igs.bkg.bund.de does not answer from some networks. That release is never
-marked Latest.
-
-This repository was `taxi-antispoof-maps` until 2026-10-14. Apps before 0.24.1 ask that address directly, and GitHub
-forwards it here only while no repository of that name exists: never create one.
-
-The app's privacy policy and terms of use are at https://dovedu.app.
+- Map, road and address data: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, available under the
+  [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/).
+- Map tiles in the OpenMapTiles schema: © [OpenMapTiles](https://openmaptiles.org), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- Map styles: [OpenFreeMap](https://openfreemap.org) (MIT), based on [OSM Liberty](https://github.com/maputnik/osm-liberty)
+  and OSM Bright (BSD 3-Clause; design CC BY 3.0 and CC BY 4.0). Fonts: Noto Sans,
+  [SIL Open Font License 1.1](https://openfontlicense.org). Icons: Maki (CC0).
+- Speed cameras: adapted from the list of the Ministry of Internal Affairs of Ukraine ([mvs.gov.ua](https://mvs.gov.ua)),
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- GNSS data and products: the [International GNSS Service (IGS)](https://igs.org) and its contributing organisations, among them
+  the European Space Agency (ESA), the Federal Agency for Cartography and Geodesy (BKG), Wuhan University and the
+  Center for Orbit Determination in Europe (CODE, Astronomical Institute, University of Bern). This work makes use of
+  geodetic data made available by the European Space Agency (ESA) to foster open geodetic data access, generate geodetic
+  products and promote innovation in the global geodesy community.

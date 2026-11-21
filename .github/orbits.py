@@ -1,51 +1,18 @@
-"""The last days' broadcast orbit files for the Dovedu app, written into ./out/ under the names the app asks for
-(solver/ephemeris.brdc_urls in the app repository). Run every 15 minutes by .github/workflows/orbits.yml; standard library only.
-
-Every file comes from the first archive that has it, in the order ESA (gssc.esa.int), IGS/BKG (igs.bkg.bund.de), Wuhan
-University's IGS archive (igs.gnsswhu.cn), and else from our own copy: the release's files as they were before this run, which
-the workflow downloads into ./prev/. Each archive has gone unreachable from GitHub's runners for a day or more (ESA on
-2026-11-10/11 and 11-15/16, BKG from 2026-11-17; Wuhan refuses busy hours: "too many connected users", "bad IP"), so a run that
-reaches none keeps what we had rather than dropping it. A file that never changes once out (a finished day's daily file, a
-forecast map, a predicted cut) is taken from our copy and asked of no archive.
-
-When none of the archives answered for a file we needed (no connection, timed out, refused, cut short; a "not found" is an
-answer: the file is not out yet), the file is listed in ./alerts.txt and our copy kept in its place; the workflow uploads, then
-fails the run, so GitHub sends an email.
-
-For each of the last three UTC days:
-  - today: our merge of the stations' hourly navigation files of the last 3 hours in ESA's archive, else BKG's file of the day
-    so far (BRDC00WRD_S), else our merge from Wuhan's archive. A merge has one RINEX 3 header (the first station's with
-    ionosphere lines) and every record once, and is written as BRDC00WRD_S_<day>, the name of BKG's own file of the day so far;
-  - a finished day: our copy when it is the day's final file (BRDC00IGS_R or BRDC00WRD_R), else that file from ESA, BKG or
-    Wuhan, and for yesterday in the first 2 hours after midnight UTC, before its daily file is out, our merge of its last hours.
-BKG's merged file comes without the GPS ionosphere lines (IONOSPHERIC CORR GPSA / GPSB) about half the time (October 2026):
-such a file gets the lines of a station's hourly navigation file of the same day (every receiver decodes the same GPS broadcast).
-
-Also CODE's (Bern) forecast ionosphere maps (IONEX) for today and tomorrow, under their own names (solver/ephemeris.iono_names
-in the app repository): today's out that morning (COD0OPSP0D_, about 07:15 UTC) and out the morning before (COD0OPSP1D_), and
-tomorrow's out this morning (COD0OPSP1D_). Our copy, else ESA's archive, else Wuhan's (anonymous FTP, byte for byte as CODE
-wrote them).
-
-And predicted orbits (solver/ephemeris.predicted_names in the app repository): Wuhan University's hourly multi-GNSS ultra-rapid
-file (WUM0MGXNRT: GPS, GLONASS, Galileo, BeiDou; a day observed up to its issue, a day predicted after, 5-min epochs, out 1-2 h
-after the issue) cut to the last PRED_OBS_H observed hours and the predicted day on 15-min epochs (some 0.4 MB instead of 1.9),
-for each of the last PRED_KEEP issue hours: our copy when it has one, else cut from Wuhan's archive, the product's only one. One
-issue hour missed is usual; an alert only when none of the last PRED_ALERT_H hours' is served and Wuhan did not answer.
-"""
+"""Writes the files of the release "orbits" into ./out/. Run by .github/workflows/orbits.yml; standard library only."""
 import contextlib, datetime, ftplib, gzip, io, re, sys, urllib.error, urllib.request
 from pathlib import Path
 
 OUT = Path('out'); OUT.mkdir(exist_ok=True)
-PREV = Path('prev')                   # our copy: the release's files before this run (orbits.yml downloads them)
-ALERTS = Path('alerts.txt')           # the files none of the archives answered for; orbits.yml fails the run on them
+PREV = Path('prev')                   # the release's files before this run (orbits.yml downloads them)
+ALERTS = Path('alerts.txt')           # the files no archive answered for; orbits.yml fails the run on them
 ESA, WHU = 'gssc.esa.int', 'igs.gnsswhu.cn'
 DAILY = {ESA: '/gnss/data/daily/{y}/{doy}/', WHU: '/pub/gps/data/daily/{y}/brdc/'}
 HOURLY = {ESA: '/gnss/data/hourly/{y}/{doy}/{h}', WHU: '/pub/gps/data/hourly/{y}/{doy}/{h}'}
 BKG = 'https://igs.bkg.bund.de/root_ftp/IGS/BRDC/{y}/{doy}/'
 MIN_BYTES = 10_000
 IONEX_FTP = ((ESA, '/gnss/products/ionex/{y}/{doy}/'), (WHU, '/pub/gps/products/ionex/{y}/{doy}/'))
-PRED_OBS_H, PRED_KEEP = 6, 8      # the app repository's solver/ephemeris.PRED_OBS_H and PRED_LAG_H: change them together
-PRED_ALERT_H = 4                  # Wuhan's file is out 1-2 h after its issue: none of the last 4 hours' means hours of failures
+PRED_OBS_H, PRED_KEEP = 6, 8      # the app asks for the file names these give: change them only together with the app
+PRED_ALERT_H = 4                  # a source file is out 1-2 h after its hour: none of the last 4 hours' means hours of failures
 
 
 def names(day):
@@ -58,7 +25,7 @@ def good(raw):
 
 
 def ours(name):
-    """Our copy of the file (the release's, downloaded into PREV), else None."""
+    """The release's copy of the file (downloaded into PREV), else None."""
     p = PREV / name
     return p.read_bytes() if p.is_file() else None
 
@@ -139,10 +106,9 @@ def split(text):
 
 
 def merge(host, day, now, per_hour=40):
-    """The day's records from the stations' hourly navigation files of the last 3 hours in host's archive (one station per
-    country, at most per_hour an hour: spread over the world, so every satellite is in view of some), each record once. None
-    when the archive has no station file of those hours yet; an error when the archive stops answering halfway (a merge is
-    whole or not at all)."""
+    """One file of the day's records from the hourly files of the last 3 hours in host's archive (one per country, at most
+    per_hour an hour), each record once. None when the archive has no file of those hours yet; an error when it stops
+    answering halfway."""
     head = None; seen = set(); recs = []; files = 0
     with ftp(host) as f:
         for back in range(3):
@@ -175,8 +141,8 @@ def merge(host, day, now, per_hour=40):
 
 
 def station_iono(day, now, tries=12):
-    """(station file, its IONOSPHERIC CORR lines) from a station's hourly navigation file of the day that has the GPS ones (the
-    last 3 hours for today, a finished day's last 3), in ESA's archive, else Wuhan's; else None."""
+    """(file name, its IONOSPHERIC CORR lines) from an hourly file of the day that has the GPSA and GPSB ones (the last 3 hours
+    for today, a finished day's last 3), in ESA's archive, else Wuhan's; else None."""
     hours = [now - datetime.timedelta(hours=b) for b in range(3)] if day == now.strftime('%Y%j') else \
             [datetime.datetime.strptime(day, '%Y%j') + datetime.timedelta(hours=h) for h in (23, 22, 21)]
     for host in (ESA, WHU):
@@ -202,7 +168,7 @@ def station_iono(day, now, tries=12):
 
 
 def with_iono(raw, day, now):
-    """The file with the GPS ionosphere lines: as it is when it has them, else with a station's (station_iono) before END OF HEADER."""
+    """The file as it is when its header has a GPSA line, else with station_iono's lines before END OF HEADER."""
     text = gzip.decompress(raw).decode('latin-1'); lines = text.split('\n')
     end = next((i for i, l in enumerate(lines) if 'END OF HEADER' in l), None)
     if end is None or any(l[:4] == 'GPSA' and 'IONOSPHERIC CORR' in l for l in lines[:end]): return raw
@@ -214,7 +180,7 @@ def with_iono(raw, day, now):
 
 
 def broadcast(day, back, now):
-    """(name, bytes) of the day's file for the app (back: days before today), else None; and the alert when no archive answered."""
+    """(name, bytes) of the day's file (back: days before today), else None; and the alert when no archive answered."""
     mine = None
     for n in names(day):
         raw = ours(n)
@@ -244,8 +210,8 @@ def good_ionex(raw):
 
 
 def ionex(now):
-    """([(name, bytes)] of the forecast maps wanted (the module's docstring), alerts): each from our copy (a map never changes
-    once out), else ESA's archive, else Wuhan's."""
+    """([(name, bytes)], alerts): each file from the release's copy (it never changes once out), else ESA's archive, else
+    Wuhan's."""
     out, alerts = [], []
     for back, kinds in ((0, ('P0D', 'P1D')), (-1, ('P1D',))):
         day = (now - datetime.timedelta(days=back)).strftime('%Y%j')
@@ -261,8 +227,7 @@ def ionex(now):
 
 
 def pred_name(issue):
-    """Our cut's name for an issue hour (GPS time; the 18 s from UTC are no matter): the product's long name with the cut's
-    first epoch, length and step."""
+    """The file name for an issue hour."""
     return f'WUM0MGXNRT_{issue - datetime.timedelta(hours=PRED_OBS_H):%Y%j%H%M}_{PRED_OBS_H + 24}H_15M_ORB.SP3.gz'
 
 
@@ -272,8 +237,8 @@ def good_sp3(raw):
 
 
 def cut(text):
-    """Wuhan's file -> (issue, our cut): the epochs from PRED_OBS_H before the issue (the first epoch with a predicted orbit,
-    flag P in column 80) on whole quarter hours, the header's first epoch, count and step rewritten. None without a prediction."""
+    """SP3 text -> (issue: its first epoch flagged P in column 80, the text cut to the epochs from PRED_OBS_H before it on whole
+    quarter hours, the header's first epoch, count and step rewritten). None without such an epoch."""
     lines = text.splitlines(); first = next(i for i, l in enumerate(lines) if l.startswith('* '))
     head, blocks = list(lines[:first]), []
     for l in lines[first:]:
@@ -293,8 +258,8 @@ def cut(text):
 
 
 def predicted(now):
-    """([(name, bytes)] of our cuts of the last PRED_KEEP issue hours that are out, alert or None): each from our copy, else cut
-    from Wuhan's original (in the GPS week folder of its first epoch, or the next)."""
+    """([(name, bytes)] of the last PRED_KEEP issue hours that are out, alert or None): each from the release's copy, else cut
+    from the source file in Wuhan's archive (in the GPS week folder of its first epoch, or the next)."""
     out = []; fresh = reached = False
     for h in range(1, PRED_KEEP + 1):
         issue = now.replace(minute=0, second=0, microsecond=0) - datetime.timedelta(hours=h); name = pred_name(issue)
@@ -334,4 +299,4 @@ try:
 except Exception as e: print(f'  {type(e).__name__} {str(e)[:120]}')
 print('kept:', kept)
 if alerts: ALERTS.write_text('\n'.join(alerts) + '\n'); print('alerts:', *alerts, sep='\n  ')
-sys.exit(0 if any(n.startswith('BRDC') for n in kept) else 1)    # no broadcast file at all: the release is left as it is
+sys.exit(0 if any(n.startswith('BRDC') for n in kept) else 1)    # no BRDC file at all: the workflow leaves the release as it is

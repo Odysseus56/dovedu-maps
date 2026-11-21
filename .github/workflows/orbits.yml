@@ -1,15 +1,7 @@
-# Our own copy of the satellites' broadcast orbit files for the Dovedu app: the last three days' files go
-# into the release "orbits", replacing the older copy (.github/orbits.py: each file from ESA's archive, else IGS/BKG's, else Wuhan
-# University's IGS archive, else the release's own copy; for today a merge of the stations' hourly files; a file without the GPS
-# ionosphere lines gets a station's), with CODE's forecast ionosphere maps for today and tomorrow, and the predicted orbit files of
-# the last 8 issue hours (Wuhan University's hourly multi-GNSS ultra-rapid product, cut to 30 h on 15-min epochs). The app
-# downloads from here first. The release is never "Latest", so the maps' catalogue link (releases/latest/download/catalog.json)
-# keeps pointing at the map packs. A file kept from the release's copy because no archive answered fails the run after the upload,
-# so GitHub sends an email.
-# GitHub drops most timed runs (4 of 26 hourly ones on 2026-10-11/12, then 2 of 156 five-minute ones in a night), so the
-# timer is the app's database (founder, 2026-10-13): every 15 minutes it asks for a run through the API (workflow_dispatch;
-# server/sql/003-orbits-timer.sql in the app's repository). The hourly schedule stays as a backup. A run skips the work while
-# today's file is under 10 minutes old.
+# Replaces the files of the release "orbits" (never marked Latest) with those .github/orbits.py writes. A file kept from the
+# release's copy because no archive answered fails the run after the upload, so GitHub sends an email.
+# Runs are also asked for through workflow_dispatch, since GitHub drops most timed runs; the hourly schedule is a backup. A run
+# skips the work while today's file is under 10 minutes old.
 name: orbits
 on:
   schedule:
